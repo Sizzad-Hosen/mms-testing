@@ -10,7 +10,7 @@ test('Login succeeds with valid credentials', async ({ page, context }) => {
   await page.goto('about:blank');
 
   await page.goto(
-    'https://app-mms.baumnest.com/MQZUKKX7TLD/login',
+    '/MQZUKKX7TLD/login',
     { waitUntil: 'load' }
   );
 
@@ -37,7 +37,7 @@ test('Login fails with invalid credentials', async ({ page, context }) => {
   await page.goto('about:blank');
 
   // navigate with networkidle (SPA friendly)
-  await page.goto('https://app-mms.baumnest.com/MQZUKKX7TLD/login', { waitUntil: 'networkidle' });
+  await page.goto('/MQZUKKX7TLD/login', { waitUntil: 'networkidle' });
 
   // reliable selectors
   const email = page.locator('input[name="email"]');

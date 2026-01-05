@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test ",
+    "test": "npx playwright test",
     "ui": "npx playwright test --ui",
     "report": "npx playwright show-report",
-    "debug": "npx playwright test --debug"
+    "debug": "npx playwright test --debug",
+    "trace": "playwright show-trace"
   },
   "keywords": [],
   "author": "",
