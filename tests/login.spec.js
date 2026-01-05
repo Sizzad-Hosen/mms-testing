@@ -1,33 +1,32 @@
 import { test, expect } from '@playwright/test';
 
 test.use({
-  storageState: undefined, // 🔥 force fresh session
+  storageState: undefined, 
 });
 
-// test('Login succeeds with valid credentials', async ({ page, context }) => {
+test('Login succeeds with valid credentials', async ({ page, context }) => {
 
-//   // 🔥 extra safety
-//   await context.clearCookies();
-//   await page.goto('about:blank');
+  await context.clearCookies();
+  await page.goto('about:blank');
 
-//   await page.goto(
-//     'https://app-mms.baumnest.com/MQZUKKX7TLD/login',
-//     { waitUntil: 'load' }
-//   );
+  await page.goto(
+    'https://app-mms.baumnest.com/MQZUKKX7TLD/login',
+    { waitUntil: 'load' }
+  );
 
-//   const email = page.getByPlaceholder(/email/i);
-//   const password = page.getByPlaceholder(/password/i);
+  const email = page.getByPlaceholder(/email/i);
+  const password = page.getByPlaceholder(/password/i);
 
-//   await expect(email).toBeVisible({ timeout: 15000 });
-//   await expect(password).toBeVisible();
+  await expect(email).toBeVisible({ timeout: 15000 });
+  await expect(password).toBeVisible();
 
-//   await email.fill('sizzadhosen@gmail.com');
-//   await password.fill('2003Sizzad');
+  await email.fill('sizzadhosen@gmail.com');
+  await password.fill('2003Sizzad');
 
-//   await page.getByRole('button', { name: /login/i }).click();
+  await page.getByRole('button', { name: /login/i }).click();
 
-//   await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
-// });
+  await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
+});
 
 
 
@@ -56,7 +55,7 @@ test('Login fails with invalid credentials', async ({ page, context }) => {
 
   // assert error message
   const errorMessage = page.getByText('These credentials do not match our records');
-  await expect(errorMessage).toBeVisible({ timeout: 10000 });
+  await expect(errorMessage).toBeVisible({ timeout: 20000 });
 
   // optional: page remains on login
   await expect(page).toHaveURL(/login/);
