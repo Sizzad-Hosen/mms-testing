@@ -1,62 +1,52 @@
+
 import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPages';
 
-test.use({
-  storageState: undefined, 
-});
+test.describe('Auth Module - Login', () => {
 
-test('Login succeeds with valid credentials', async ({ page, context }) => {
+  // Hook: before each test
+  test.beforeEach(async ({ page, context }) => {
+    await context.clearCookies();
+    await page.goto('about:blank');
+  });
 
-  await context.clearCookies();
-  await page.goto('about:blank');
+  // Hook: after each test (optional)
+  test.afterEach(async ({ context }) => {
+    await context.clearCookies();
+  });
 
-  await page.goto(
-    '/MQZUKKX7TLD/login',
-    { waitUntil: 'load' }
-  );
+  //  Valid login
+  test('Login succeeds with valid credentials ', async ({ page, context }) => {
+    const loginPage = new LoginPage(page);
 
-  const email = page.getByPlaceholder(/email/i);
-  const password = page.getByPlaceholder(/password/i);
+    await test.step('Navigate to Login page', async () => {
+      await loginPage.goto();
+    });
 
-  await expect(email).toBeVisible({ timeout: 15000 });
-  await expect(password).toBeVisible();
+    await test.step('Login with valid credentials', async () => {
+      await loginPage.login('sizzadhosen@gmail.com', '2003Sizzad');
+    });
 
-  await email.fill('sizzadhosen@gmail.com');
-  await password.fill('2003Sizzad');
+    await test.step('Expect redirect to 2FA page', async () => {
+      await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
+    });
+  });
 
-  await page.getByRole('button', { name: /login/i }).click();
+  //  Invalid login
+  test('Login fails with invalid credentials ', async ({ page, context }) => {
+    const loginPage = new LoginPage(page);
 
-  await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
-});
+    await test.step('Navigate to Login page', async () => {
+      await loginPage.goto();
+    });
 
+    await test.step('Login with invalid credentials', async () => {
+      await loginPage.login('fake@email.com', 'wrongpass');
+    });
 
+    await test.step('Expect error message', async () => {
+      await loginPage.expectError();
+    });
+  });
 
-test('Login fails with invalid credentials', async ({ page, context }) => {
-
-  // fresh start
-  await context.clearCookies();
-  await page.goto('about:blank');
-
-  // navigate with networkidle (SPA friendly)
-  await page.goto('/MQZUKKX7TLD/login', { waitUntil: 'networkidle' });
-
-  // reliable selectors
-  const email = page.locator('input[name="email"]');
-  const password = page.locator('input[name="password"]');
-  const loginButton = page.getByRole('button', { name: /login/i });
-
-  // wait for visibility
-  await expect(email).toBeVisible({ timeout: 15000 });
-  await expect(password).toBeVisible({ timeout: 15000 });
-
-  // invalid credentials
-  await email.fill('fake@email.com');
-  await password.fill('wrongpass');
-  await loginButton.click();
-
-  // assert error message
-  const errorMessage = page.getByText('These credentials do not match our records');
-  await expect(errorMessage).toBeVisible({ timeout: 20000 });
-
-  // optional: page remains on login
-  await expect(page).toHaveURL(/login/);
 });
