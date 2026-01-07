@@ -1,6 +1,7 @@
 
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPages';
+import { LoginPage } from '../../pages/LoginPages';
+
 
 test.describe('Auth Module - Login', () => {
 
@@ -16,7 +17,7 @@ test.describe('Auth Module - Login', () => {
   });
 
   //  Valid login
-  test('Login succeeds with valid credentials ', async ({ page, context }) => {
+  test('Login succeeds with valid credentials @smoke', async ({ page, context }) => {
     const loginPage = new LoginPage(page);
 
     await test.step('Navigate to Login page', async () => {
@@ -33,7 +34,7 @@ test.describe('Auth Module - Login', () => {
   });
 
   //  Invalid login
-  test('Login fails with invalid credentials ', async ({ page, context }) => {
+  test('Login fails with invalid credentials @regression', async ({ page, context }) => {
     const loginPage = new LoginPage(page);
 
     await test.step('Navigate to Login page', async () => {
