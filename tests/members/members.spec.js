@@ -15,6 +15,11 @@ test.describe('Member Management', () => {
       .fill(process.env.LOGIN_PASSWORD || '2003Sizzad');
 
     await page.getByRole('button', { name: 'Login' }).click();
+    
+        
+    const otpResponse = await request.post('https://app-mms.baumnest.com/2fa/send-code', { data: { email } });
+    const otp = (await otpResponse.json()).code;
+    console.log("opt", otp)
 
     // 🔹 Step 3: Verify dashboard loaded
     await expect(page).toHaveURL(/members/i);
