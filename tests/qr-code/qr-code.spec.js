@@ -12,7 +12,6 @@ test.describe('QR Code Feature Tests', () => {
       process.env.LOGIN_EMAIL || 'sizzadhosen@gmail.com',
       process.env.LOGIN_PASSWORD || '2003Sizzad'
     );
-
     // Verify 2FA page
     await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
   });

@@ -1,25 +1,13 @@
 
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPages';
-
-
+import 'dotenv/config';
 test.describe('Auth Module - Login', () => {
-
-  // Hook: before each test
-  test.beforeEach(async ({ page, context }) => {
-    await context.clearCookies();
-    await page.goto('about:blank');
-  });
-
-  // Hook: after each test (optional)
-  test.afterEach(async ({ context }) => {
-    await context.clearCookies();
-  });
 
   //  Valid login
 test('Login succeeds with valid credentials @smoke', async ({ page, request }) => {
-  const email = 'sizzadhosen@gmail.com';
-  const password = '2003Sizzad';
+  const email = process.env.LOGIN_EMAIL
+  const password =process.env.LOGIN_PASSWORD
   const loginPage = new LoginPage(page);
 
   await test.step('Navigate to Login page', async () => {
@@ -30,22 +18,13 @@ test('Login succeeds with valid credentials @smoke', async ({ page, request }) =
     await loginPage.login(email, password);
   });
 
-  // await test.step('Expect redirect to 2FA page', async () => {
-  //   await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
-  // });
-
-  // ✅ Get OTP dynamically from backend
-  const otpResponse = await request.post('https://app-mms.baumnest.com/2fa/send-code', { data: { email } });
-  const otp = (await otpResponse.json()).code;
-  console.log("OTP:", otp);
-
-  // ✅ Fill OTP in frontend input and submit
-  await page.fill('#otp', otp);           // replace '#otp' with actual selector
-  await page.click('#verify-btn');        // replace '#verify-btn' with actual button selector
+  await test.step('Expect redirect to 2FA page', async () => {
+    await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
+  });
 
   // ✅ Wait for QR code page
   await page.waitForURL('/qr-code', { timeout: 20000 });
-  // await expect(page.locator('img[alt="QR Code"]')).toBeVisible();
+
 });
 
 
