@@ -1,0 +1,30 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "https://app-mms.baumnest.com",
+      "localStorage": [
+        {
+          "name": "i18nextLng",
+          "value": "en-US"
+        },
+        {
+          "name": "loginEmail",
+          "value": "sizzadhosen@gmail.com"
+        },
+        {
+          "name": "tenantId",
+          "value": "MQZUKKX7TLD"
+        },
+        {
+          "name": "tenantUserToken",
+          "value": "199|K9dcuDpvgRGZlZgIBspL2sLav0eUaGUHWOrSoP8g61c64fdb"
+        },
+        {
+          "name": "tenantName",
+          "value": "Test"
+        }
+      ]
+    }
+  ]
+}

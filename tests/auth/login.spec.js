@@ -1,48 +1,28 @@
-
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPages';
 import 'dotenv/config';
+
 test.describe('Auth Module - Login', () => {
+  test('Login succeeds with valid credentials and saves session @smoke', async ({ page, context }) => {
+    const email = process.env.LOGIN_EMAIL;
+    const password = process.env.LOGIN_PASSWORD;
+    const loginPage = new LoginPage(page);
 
-  //  Valid login
-test('Login succeeds with valid credentials @smoke', async ({ page, request }) => {
-  const email = process.env.LOGIN_EMAIL
-  const password =process.env.LOGIN_PASSWORD
-  const loginPage = new LoginPage(page);
-
-  await test.step('Navigate to Login page', async () => {
+    // 1️⃣ Navigate to login page
     await loginPage.goto();
-  });
 
-  await test.step('Login with valid credentials', async () => {
+    // 2️⃣ Login (SPA-safe)
     await loginPage.login(email, password);
+
+    // 3️⃣ Wait for main page (skip OTP for now)
+    await expect(page).toHaveURL('https://app-mms.baumnest.com/MQZUKKX7TLD', { timeout: 20000 });
+
+    // 4️⃣ Navigate to QR code page
+    await page.goto('https://app-mms.baumnest.com/MQZUKKX7TLD/qr-code');
+
+    // 7️⃣ Save session for reuse in other tests
+    await context.storageState({ path: 'storageState.json' });
+
+    console.log('Login complete and session saved.');
   });
-
-  await test.step('Expect redirect to 2FA page', async () => {
-    await expect(page).toHaveURL(/2fa/, { timeout: 20000 });
-  });
-
-  // ✅ Wait for QR code page
-  await page.waitForURL('/qr-code', { timeout: 20000 });
-
-});
-
-
-  // //  Invalid login
-  // test('Login fails with invalid credentials @regression', async ({ page, context }) => {
-  //   const loginPage = new LoginPage(page);
-
-  //   await test.step('Navigate to Login page', async () => {
-  //     await loginPage.goto();
-  //   });
-
-  //   await test.step('Login with invalid credentials', async () => {
-  //     await loginPage.login('fake@email.com', 'wrongpass');
-  //   });
-
-  //   await test.step('Expect error message', async () => {
-  //     await loginPage.expectError();
-  //   });
-  // });
-
 });

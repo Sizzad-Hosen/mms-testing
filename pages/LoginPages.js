@@ -11,7 +11,7 @@ export class LoginPage {
   }
 
   async goto() {
-    await this.page.goto('/MQZUKKX7TLD/login', { waitUntil: 'load' });
+    await this.page.goto('https://app-mms.baumnest.com/MQZUKKX7TLD/login', { waitUntil: 'load' });
   }
 
   async login(email, password) {

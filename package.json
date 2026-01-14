@@ -23,6 +23,8 @@
     "dotenv": "^17.2.3",
     "jimp": "^0.22.12",
     "jsqr": "^1.4.0",
+    "mailslurp-client": "^16.0.0",
+    "otpauth": "^9.4.1",
     "playwright": "^1.57.0",
     "qrcode-reader": "^1.0.4"
   }
