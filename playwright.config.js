@@ -13,10 +13,11 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    baseURL: process.env.BASE_URL || 'https://app-mms.baumnest.com/MQZUKKX7TLD',
+    baseURL: process.env.BASE_URL || 'https://app-mms.baumnest.com',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    // storageState: 'storageState.json',
   },
 
   projects: [
@@ -24,7 +25,7 @@ export default defineConfig({
       name: 'google-chrome',
       use: { 
         ...devices['Desktop Chrome'],
-        channel: 'chrome',  // ← ensures it opens real Google Chrome
+        channel: 'chrome',  
       },
     },
   ],
