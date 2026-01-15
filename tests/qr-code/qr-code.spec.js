@@ -15,6 +15,11 @@ test.describe('QR Code  Authenticated User Flow', () => {
     const qrImage = page.getByRole('img', { name: /qr code/i });
 
     await expect(qrImage).toBeVisible();
+    const src = await qrImage.getAttribute('src');
+    expect(src).toBeTruthy();
+
+  // Usually QR codes are base64 or dynamic URLs
+    expect(src).toMatch(/base64|qr|image/i);
   });
 
   test('should display QR code expiry date', async ({ page }) => {
