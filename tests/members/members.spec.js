@@ -100,4 +100,50 @@ test('should navigate between pages and show different data', async ({ page }) =
   expect(firstRowPage2).not.toEqual(firstRowPage1);
 });
 
+
+  test('should assign a role to a member', async ({ page }) => {
+    // 1️⃣ Locate member row dynamically
+    const memberName = 'jjame hossen';
+    const memberRow = page.getByRole('row', { name: new RegExp(memberName, 'i') });
+
+    // 2️⃣ Open role combobox / actions menu
+    const roleCombobox = memberRow.getByRole('combobox');
+    await expect(roleCombobox).toBeVisible();
+    await expect(roleCombobox).toBeEnabled();
+    await roleCombobox.click();
+
+    // 3️⃣ Select role from dropdown
+    const newRole = 'HOA president';
+    await page.getByText(new RegExp(newRole, 'i')).click();
+
+    // 4️⃣ Confirm role change
+    const confirmButton = page.getByRole('button', { name: /confirm/i });
+    await expect(confirmButton).toBeVisible();
+    await expect(confirmButton).toBeEnabled();
+    await confirmButton.click();
+
+    // 5️⃣ Validate updated role in member row
+    await expect(memberRow.getByText(new RegExp(newRole, 'i'))).toBeVisible();
+
+    // 6️⃣ Optional: Discard scenario
+    // await memberRow.getByRole('combobox').click();
+    // await page.getByText(/HOA vice/i).click();
+    // await page.getByRole('button', { name: /discard/i }).click();
+    // await expect(memberRow.getByText(new RegExp(newRole, 'i'))).toBeVisible(); // Role should remain unchanged
+  });
+
+  test('should show all possible roles in dropdown', async ({ page }) => {
+    const memberRow = page.getByRole('row', { name: /jjame hossen/i });
+    const roleCombobox = memberRow.getByRole('combobox');
+    await roleCombobox.click();
+
+    const expectedRoles = ['HOA president', 'HOA vice-president', 'Member'];
+    for (const role of expectedRoles) {
+      await expect(page.getByText(new RegExp(role, 'i'))).toBeVisible();
+    }
+  });
+
 });
+
+
+
