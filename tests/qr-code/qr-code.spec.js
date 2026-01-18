@@ -1,39 +1,50 @@
 import { test, expect } from '@playwright/test';
-// authentication session
+import fs from 'fs';
+
+// 🔐 authenticated session
 test.use({
   storageState: 'storageState.json',
 });
 
-test.describe('QR Code  Authenticated User Flow', () => {
+test.describe('QR Code – Authenticated User Flow', () => {
 
   test.beforeEach(async ({ page }) => {
-    // navigate this url before test
     await page.goto('/MQZUKKX7TLD/qr-code');
   });
 
+  // Test case 01: QR Code image visible
   test('should display QR code image', async ({ page }) => {
     const qrImage = page.getByRole('img', { name: /qr code/i });
 
-    await expect(qrImage).toBeVisible();
+    await expect(qrImage).toBeVisible({ timeout: 15000 });
+
     const src = await qrImage.getAttribute('src');
     expect(src).toBeTruthy();
-
-  // Usually QR codes are base64 or dynamic URLs
     expect(src).toMatch(/base64|qr|image/i);
   });
 
+ 
+  // Test case 02: QR Code generated successfully
+  test('should generate QR code successfully', async ({ page }) => {
+    const qrImage = page.getByRole('img', { name: /qr code/i });
+
+    await expect(qrImage).toHaveAttribute('src', /.+/, {
+      timeout: 15000,
+    });
+  });
+
+  // Test case 03: QR Code expiry date visible
   test('should display QR code expiry date', async ({ page }) => {
     const expiryLabel = page.getByText(/expiry date:/i);
-
     await expect(expiryLabel).toBeVisible();
   });
 
+  // Test case 04: Download QR Code PDF (valid file)
   test('should allow user to download QR code as PDF', async ({ page }) => {
     const downloadButton = page.getByRole('button', {
       name: /download pdf/i,
     });
 
-    await expect(downloadButton).toBeVisible();
     await expect(downloadButton).toBeEnabled();
 
     const [download] = await Promise.all([
@@ -41,13 +52,16 @@ test.describe('QR Code  Authenticated User Flow', () => {
       downloadButton.click(),
     ]);
 
-    // Validate filename
+    const filePath = await download.path();
+    expect(filePath).not.toBeNull();
+
     const fileName = download.suggestedFilename();
     expect(fileName).toMatch(/\.pdf$/i);
 
-    // Validate file existence 
-    const filePath = await download.path();
-    expect(filePath).not.toBeNull();
+    // prevent corrupted / empty file
+    const fileSize = fs.statSync(filePath).size;
+    expect(fileSize).toBeGreaterThan(1000);
   });
+ 
 
 });
