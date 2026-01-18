@@ -6,7 +6,7 @@ test.use({
   storageState: 'storageState.json',
 });
 
-test.describe('QR Code – Authenticated User Flow', () => {
+test.describe('QR Code Authenticated User Flow', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/MQZUKKX7TLD/qr-code');
