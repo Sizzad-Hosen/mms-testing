@@ -17,7 +17,6 @@ test.describe('QR Code Authenticated User Flow', () => {
     const qrImage = page.getByRole('img', { name: /qr code/i });
 
     await expect(qrImage).toBeVisible({ timeout: 15000 });
-
     const src = await qrImage.getAttribute('src');
     expect(src).toBeTruthy();
     expect(src).toMatch(/base64|qr|image/i);
@@ -62,6 +61,15 @@ test.describe('QR Code Authenticated User Flow', () => {
     const fileSize = fs.statSync(filePath).size;
     expect(fileSize).toBeGreaterThan(1000);
   });
- 
+
+  // when expired generated qr code button visible and enable 
+test('generate QR Code visible and button enable', async ({ page }) => {
+  const generateQRCodeBtn = page.getByRole('button', { name: /generate qr code/i });
+
+  await expect(generateQRCodeBtn).toBeVisible({ timeout: 15000 });
+  await expect(generateQRCodeBtn).toBeEnabled({ timeout: 15000 });
+  await generateQRCodeBtn.click();
+});
+
 
 });

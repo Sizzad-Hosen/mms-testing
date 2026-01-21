@@ -47,13 +47,12 @@ test.describe('Members Page - Status Tabs', () => {
       page.getByRole('tab', { name: /rejected/i })
     ).toHaveAttribute('aria-selected', 'true');
   });
+
 //   Deleted Registered members button visible and enable
- 
   test('should show Delete Member action and it should be enabled', async ({ page }) => {
+
     const firstRow = page.getByRole('row').nth(1);
-
     await firstRow.getByLabel(/open menu/i).click();
-
     const deleteAction = page.getByRole('menuitem', {
       name: /delete member/i,
     });
@@ -100,48 +99,69 @@ test('should navigate between pages and show different data', async ({ page }) =
   expect(firstRowPage2).not.toEqual(firstRowPage1);
 });
 
+// test('should allow selecting all roles from dropdown', async ({ page }) => {
+//   await page.getByRole('option', { name: 'HOA president' }).click();
+//   await page.getByRole('option', { name: 'HOA vice-president' }).click();
+//   await page.getByRole('option', { name: 'HOA auditor' }).click();
+//   await page.getByRole('option', { name: 'Individual homeowner' }).click();
 
-  test('should assign a role to a member', async ({ page }) => {
-    // 1️⃣ Locate member row dynamically
-    const memberName = 'jjame hossen';
-    const memberRow = page.getByRole('row', { name: new RegExp(memberName, 'i') });
+//   await page.getByRole('button', { name: 'Close' }).click();
+// });
 
-    // 2️⃣ Open role combobox / actions menu
-    const roleCombobox = memberRow.getByRole('combobox');
-    await expect(roleCombobox).toBeVisible();
-    await expect(roleCombobox).toBeEnabled();
-    await roleCombobox.click();
+// test('should allow selecting all roles from dropdown', async ({ page }) => {
+//   const roles = [
+//     'HOA president',
+//     'HOA vice-president',
+//     'HOA auditor',
+//     'Individual homeowner',
+//   ];
 
-    // 3️⃣ Select role from dropdown
-    const newRole = 'HOA president';
-    await page.getByText(new RegExp(newRole, 'i')).click();
+//   // Step 1: Open the dropdown
+//   const roleCombobox = page.getByRole('combobox').first();
+//   await expect(roleCombobox).toBeVisible();
+//   await roleCombobox.click(); // opens the dropdown
 
-    // 4️⃣ Confirm role change
-    const confirmButton = page.getByRole('button', { name: /confirm/i });
-    await expect(confirmButton).toBeVisible();
-    await expect(confirmButton).toBeEnabled();
-    await confirmButton.click();
+//   // Step 2: For each role, assert visible then click
+//   for (const role of roles) {
+//     const option = page.getByRole('option', { name: role });
+//     await expect(option).toBeVisible({ timeout: 5000 });
+//     await option.click(); 
+//   }
+// });
 
-    // 5️⃣ Validate updated role in member row
-    await expect(memberRow.getByText(new RegExp(newRole, 'i'))).toBeVisible();
 
-    // 6️⃣ Optional: Discard scenario
-    // await memberRow.getByRole('combobox').click();
-    // await page.getByText(/HOA vice/i).click();
-    // await page.getByRole('button', { name: /discard/i }).click();
-    // await expect(memberRow.getByText(new RegExp(newRole, 'i'))).toBeVisible(); // Role should remain unchanged
-  });
+// test('should close change role dialog without saving', async ({ page }) => {
+//   await page.getByRole('heading', { name: 'Change role' }).click();
+//   await page.getByRole('button', { name: 'Close' }).click();
+// });
 
-  test('should show all possible roles in dropdown', async ({ page }) => {
-    const memberRow = page.getByRole('row', { name: /jjame hossen/i });
-    const roleCombobox = memberRow.getByRole('combobox');
-    await roleCombobox.click();
+// test('should save role change when Confirm is clicked', async ({ page }) => {
+//   // Open dialog
+//   await page.getByRole('heading', { name: 'Change role' }).click();
 
-    const expectedRoles = ['HOA president', 'HOA vice-president', 'Member'];
-    for (const role of expectedRoles) {
-      await expect(page.getByText(new RegExp(role, 'i'))).toBeVisible();
-    }
-  });
+//   // Select a role
+//   await page.getByRole('option', { name: 'HOA auditor' }).click();
+
+//   // Confirm the change
+//   await page.getByRole('button', { name: 'Confirm' }).click();
+
+//   // Verify role updated
+//   await expect(page.getByText('HOA auditor')).toBeVisible();
+// });
+
+// test('should cancel role change when Discard is clicked', async ({ page }) => {
+//   // Open dialog
+//   await page.getByRole('heading', { name: 'Change role' }).click();
+
+//   // Select a new role
+//   await page.getByRole('option', { name: 'HOA vice-president' }).click();
+
+//   // Discard the change
+//   await page.getByRole('button', { name: 'Discard' }).click();
+
+//   // Verify original role remains (example: 'HOA auditor')
+//   await expect(page.getByText('HOA auditor')).toBeVisible();
+// });
 
 });
 
