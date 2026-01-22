@@ -22,23 +22,29 @@ test.describe('QR Code Authenticated User Flow', () => {
     expect(src).toMatch(/base64|qr|image/i);
   });
 
- 
-  // Test case 02: QR Code generated successfully
-  test('should generate QR code successfully', async ({ page }) => {
-    const qrImage = page.getByRole('img', { name: /qr code/i });
+  // Test case 02: QR Code expiry date visible
+test('should show QR expired message if past expiry date', async ({ page }) => {
+  const expiryText = await page.getByText(/expiry date:/i).textContent();
 
-    await expect(qrImage).toHaveAttribute('src', /.+/, {
-      timeout: 15000,
-    });
-  });
+  const dateString = expiryText
+    .replace(/expiry date:/i, '')
+    .trim();
 
-  // Test case 03: QR Code expiry date visible
-  test('should display QR code expiry date', async ({ page }) => {
-    const expiryLabel = page.getByText(/expiry date:/i);
-    await expect(expiryLabel).toBeVisible();
-  });
+  const expiryDate = new Date(dateString);
+  const now = new Date();
 
-  // Test case 04: Download QR Code PDF (valid file)
+  if (now >= expiryDate) {
+    await expect(page.getByText(/qr code expired/i)).toBeVisible();
+  }
+else {
+  await expect(
+    page.getByRole('img', { name: /qr code/i })
+  ).toBeVisible();
+}
+});
+
+
+  // Test case 03: Download QR Code PDF (valid file)
   test('should allow user to download QR code as PDF', async ({ page }) => {
     const downloadButton = page.getByRole('button', {
       name: /download pdf/i,
@@ -62,14 +68,53 @@ test.describe('QR Code Authenticated User Flow', () => {
     expect(fileSize).toBeGreaterThan(1000);
   });
 
-  // when expired generated qr code button visible and enable 
-test('generate QR Code visible and button enable', async ({ page }) => {
-  const generateQRCodeBtn = page.getByRole('button', { name: /generate qr code/i });
+test('should allow generating new QR code when previous QR is expired', async ({ page }) => {
 
-  await expect(generateQRCodeBtn).toBeVisible({ timeout: 15000 });
-  await expect(generateQRCodeBtn).toBeEnabled({ timeout: 15000 });
-  await generateQRCodeBtn.click();
+  //  Read expiry date text
+  const expiryText = await page.getByText(/expiry date:/i).textContent();
+
+  const dateString = expiryText
+    .replace(/expiry date:/i, '')
+    .trim();
+
+  const expiryDate = new Date(dateString);
+  const now = new Date();
+
+  const qrImage = page.getByRole('img', { name: /qr code/i });
+
+  // Ensure QR image exists first
+  await expect(qrImage).toBeVisible();
+
+  const oldSrc = await qrImage.getAttribute('src');
+
+  //  If QR is expired
+  if (now >= expiryDate) {
+
+    const generateQRCodeBtn = page.getByRole('button', {
+      name: /generate qr code/i,
+    });
+
+    await expect(generateQRCodeBtn).toBeVisible();
+    await expect(generateQRCodeBtn).toBeEnabled();
+
+    await generateQRCodeBtn.click();
+
+    //  Wait until src actually changes
+    await expect(qrImage).not.toHaveAttribute('src', oldSrc);
+
+    const newSrc = await qrImage.getAttribute('src');
+
+    //  Final assertion
+    expect(newSrc).not.toBe(oldSrc);
+
+  } else {
+    //  If QR is still valid, button must NOT exist
+    await expect(
+      page.getByRole('button', { name: /generate qr code/i })
+    ).toHaveCount(0);
+  }
 });
+
 
 
 });

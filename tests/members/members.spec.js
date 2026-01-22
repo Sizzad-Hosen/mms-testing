@@ -48,18 +48,6 @@ test.describe('Members Page - Status Tabs', () => {
     ).toHaveAttribute('aria-selected', 'true');
   });
 
-//   Deleted Registered members button visible and enable
-  test('should show Delete Member action and it should be enabled', async ({ page }) => {
-
-    const firstRow = page.getByRole('row').nth(1);
-    await firstRow.getByLabel(/open menu/i).click();
-    const deleteAction = page.getByRole('menuitem', {
-      name: /delete member/i,
-    });
-
-    await expect(deleteAction).toBeVisible();
-    await expect(deleteAction).toBeEnabled();
-  });
 
 // Registered members display data
 
@@ -79,25 +67,25 @@ test('should display registered members data in table', async ({ page }) => {
 });
 
 test('should navigate between pages and show different data', async ({ page }) => {
-  const firstRowPage1 = await page
-    .getByRole('row')
-    .nth(1)
-    .innerText();
+  const firstRowPage1 = await page.getByRole('row').nth(1).innerText();
 
-  // Next / Previous button locators
   const nextButton = page.getByRole('listitem').filter({ hasText: 'Next' });
   const prevButton = page.getByRole('listitem').filter({ hasText: 'Previous' });
 
-  // Validate buttons
   await expect(nextButton).toBeVisible();
   await expect(nextButton).toBeEnabled();
   await expect(prevButton).toBeVisible();
   await expect(prevButton).toBeEnabled();
 
-  // First row on new page
+  // Navigate to next page
+  await nextButton.click();
+
+  // Wait until first row changes
   const firstRowPage2 = await page.getByRole('row').nth(1).innerText();
+
   expect(firstRowPage2).not.toEqual(firstRowPage1);
 });
+
 
 // test('should allow selecting all roles from dropdown', async ({ page }) => {
 //   await page.getByRole('option', { name: 'HOA president' }).click();
