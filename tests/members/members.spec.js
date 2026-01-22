@@ -48,6 +48,37 @@ test.describe('Members Page - Status Tabs', () => {
     ).toHaveAttribute('aria-selected', 'true');
   });
 
+//   Deleted Registered members button visible and enable
+test('should delete member after confirmation and discard cancels', async ({ page }) => {
+
+  //  Locate first member row
+  const firstRow = page.getByRole('row').nth(1);
+  
+  // Capture unique identifier (e.g., name or email)
+  const memberName = await firstRow.getByRole('cell').nth(0).innerText();
+
+  //  Open menu & click Delete Member
+  await firstRow.getByRole('button',{name:/open menu/i}).click();
+  const deleteAction = page.getByRole('menuitem', { name: /delete member/i });
+  await expect(deleteAction).toBeVisible();
+  await expect(deleteAction).toBeEnabled();
+  await deleteAction.click();
+
+  const confirmDelete = page.getByRole('button', { name: /delete/i });
+  const discardDelete = page.getByRole('button', { name: /discard/i });
+
+  await discardDelete.click();
+  await expect(page.getByRole('row').filter({ hasText: memberName })).toBeVisible();
+
+  //  Click Delete → row should disappear
+  await firstRow.getByLabel(/open menu/i).click();
+  await deleteAction.click();
+  await confirmDelete.click();
+
+  // Wait for row to be removed from DOM
+  await expect(page.getByRole('row').filter({ hasText: memberName })).toHaveCount(0);
+
+});
 
 // Registered members display data
 
