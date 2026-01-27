@@ -36,7 +36,7 @@ test('should show QR expired message if past expiry date', async ({ page }) => {
   if (now >= expiryDate) {
     await expect(page.getByText(/qr code expired/i)).toBeVisible();
   }
-else {
+ else {
   await expect(
     page.getByRole('img', { name: /qr code/i })
   ).toBeVisible();
@@ -68,10 +68,11 @@ else {
     expect(fileSize).toBeGreaterThan(1000);
   });
 
+  // Test case : expired check after qr code expired
 test('should allow generating new QR code when previous QR is expired', async ({ page }) => {
 
   //  Read expiry date text
-  const expiryText = await page.getByText(/expiry date:/i).textContent();
+  const expiryText = await page.getByText(/expiry date:/i).textContent({timeout:3000});
 
   const dateString = expiryText
     .replace(/expiry date:/i, '')
@@ -104,8 +105,9 @@ test('should allow generating new QR code when previous QR is expired', async ({
 
     const newSrc = await qrImage.getAttribute('src');
 
-    //  Final assertion
     expect(newSrc).not.toBe(oldSrc);
+    console.log('Old QR src:', oldSrc);
+    console.log('New QR src:', newSrc);
 
   } else {
     //  If QR is still valid, button must NOT exist

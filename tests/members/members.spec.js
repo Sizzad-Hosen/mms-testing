@@ -59,6 +59,7 @@ test('should delete first member with discard and confirm flows', async ({ page 
   await page.getByRole('menuitem', { name: /delete member/i }).click();
   await page.getByRole('button', { name: /discard/i }).click();
   await expect(firstRow).toBeVisible();
+  await expect(firstRow).toHaveCount(1, { timeout: 10000 });
 
   // Confirm delete
   await firstRow.getByRole('button', { name: /open menu/i }).click();
@@ -68,32 +69,7 @@ test('should delete first member with discard and confirm flows', async ({ page 
 
 });
 
-// Test Case : change role 
-
-test('should change the role ', async ({ page }) => {
-
-  const firstRow = page.getByRole('row').nth(1);
-  await expect(firstRow).toBeVisible();
-
-  const clickRole = await firstRow.getByRole('')
-
-  //  Discard delete 
-  await firstRow.getByRole('button', { name: /open menu/i }).click();
-  await page.getByRole('menuitem', { name: /delete member/i }).click();
-  await page.getByRole('button', { name: /discard/i }).click();
-  await expect(firstRow).toBeVisible();
-
-  // Confirm delete
-  await firstRow.getByRole('button', { name: /open menu/i }).click();
-  await page.getByRole('menuitem', { name: /delete member/i }).click();
-  await page.getByRole('button', { name: /^delete$/i }).click();
-  await expect(firstRow).toHaveCount(0, { timeout: 10000 });
-
-});
-
-
-// Registered members display data
-
+//Test case : Registered members display data
 test('should display registered members data in table', async ({ page }) => {
   const table = page.getByRole('table');
   await expect(table).toBeVisible();
@@ -109,6 +85,7 @@ test('should display registered members data in table', async ({ page }) => {
   expect(cellCount).toBeGreaterThan(5);
 });
 
+//Test case : pagination work or not 
 test('should navigate between pages and show different data', async ({ page }) => {
   const firstRowPage1 = await page.getByRole('row').nth(1).innerText();
 
@@ -129,17 +106,8 @@ test('should navigate between pages and show different data', async ({ page }) =
   expect(firstRowPage2).not.toEqual(firstRowPage1);
 });
 
-
-// test('should allow selecting all roles from dropdown', async ({ page }) => {
-//   await page.getByRole('option', { name: 'HOA president' }).click();
-//   await page.getByRole('option', { name: 'HOA vice-president' }).click();
-//   await page.getByRole('option', { name: 'HOA auditor' }).click();
-//   await page.getByRole('option', { name: 'Individual homeowner' }).click();
-
-//   await page.getByRole('button', { name: 'Close' }).click();
-// });
-
-test('should allow selecting all roles from dropdown', async ({ page }) => {
+// Test case : Select and role and update it..
+test('should role change in combobox only if not already selected', async ({ page }) => {
   const roles = [
     'HOA president',
     'HOA vice-president',
@@ -147,57 +115,26 @@ test('should allow selecting all roles from dropdown', async ({ page }) => {
     'Individual homeowner',
   ];
 
-  // Step 1: Open the dropdown
-  const roleCombobox = page.getByRole('combobox')
+  const roleCombobox = page.getByRole('combobox').first();
   await expect(roleCombobox).toBeVisible();
-  await roleCombobox.click(); // opens the dropdown
+  await roleCombobox.click();
 
-  // Step 2: For each role, assert visible then click
-  for (const role of roles) {
-    const option = page.getByRole('option', { name: role });
-    await expect(option).toBeVisible({ timeout: 5000 });
-    await option.click(); 
+  const roleToSelect = roles[1]; 
+  const roleOption = page.getByRole('option', { name: roleToSelect });
+
+  const currentValue = await roleCombobox.innerText();
+  if (currentValue === roleToSelect) {
+    console.log(`${roleToSelect} is already selected, skipping click`);
+  } else {
+    await roleOption.click();
   }
-   const confirm= await page.getByRole('button', { name: '/Confirm/i' }).click();
-   await expect(confirm().toHaveCount(0))
-   const discard = await page.getByRole('button', { name: '/Discard/i' }).click();
-    await expect(discard().toHaveCount(1))
 
+ // Confirm selection
+  const confirmButton = page.getByRole('button', { name: /^Confirm$/i });
+  await expect(confirmButton).toBeVisible();
+  await confirmButton.click();
+  await expect(roleCombobox).toHaveText(roleToSelect);
 });
-
-
-// test('should close change role dialog without saving', async ({ page }) => {
-//   await page.getByRole('heading', { name: 'Change role' }).click();
-//   await page.getByRole('button', { name: 'Close' }).click();
-// });
-
-// test('should save role change when Confirm is clicked', async ({ page }) => {
-//   // Open dialog
-//   await page.getByRole('heading', { name: 'Change role' }).click();
-
-//   // Select a role
-//   await page.getByRole('option', { name: 'HOA auditor' }).click();
-
-//   // Confirm the change
-//   await page.getByRole('button', { name: 'Confirm' }).click();
-
-//   // Verify role updated
-//   await expect(page.getByText('HOA auditor')).toBeVisible();
-// });
-
-// test('should cancel role change when Discard is clicked', async ({ page }) => {
-//   // Open dialog
-//   await page.getByRole('heading', { name: 'Change role' }).click();
-
-//   // Select a new role
-//   await page.getByRole('option', { name: 'HOA vice-president' }).click();
-
-//   // Discard the change
-//   await page.getByRole('button', { name: 'Discard' }).click();
-
-//   // Verify original role remains (example: 'HOA auditor')
-//   await expect(page.getByText('HOA auditor')).toBeVisible();
-// });
 
 });
 
