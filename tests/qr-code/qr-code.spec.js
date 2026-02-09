@@ -117,6 +117,4 @@ test('should allow generating new QR code when previous QR is expired', async ({
   }
 });
 
-
-
 });
