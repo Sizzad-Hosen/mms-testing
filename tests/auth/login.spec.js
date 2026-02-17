@@ -12,9 +12,9 @@ test.describe('Auth Module - Login', () => {
     await loginPage.login(email, password);
 
   // code verification
-    // await page.waitForURL('https://app-mms.baumnest.com/MQZUKKX7TLD/2fa');
-    // await page.getByRole('spinbutton', { name: 'Code*' }).fill('165169'); 
-    // await page.getByRole('button', { name: 'Verify' }).click();
+    await page.waitForURL('https://app-mms.baumnest.com/MQZUKKX7TLD/2fa');
+    await page.getByRole('spinbutton', { name: 'Code*' }).fill('576335'); 
+    await page.getByRole('button', { name: 'Verify' }).click();
     await expect(page).toHaveURL('https://app-mms.baumnest.com/MQZUKKX7TLD')
 
     //  Save session for reuse in other tests

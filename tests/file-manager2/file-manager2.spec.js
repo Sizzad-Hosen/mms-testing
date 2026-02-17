@@ -93,6 +93,18 @@ test('should upload a new file', async ({ page }) => {
   });
 
 
+// Test case : searching and search by title
+
+ test('should search a folder by name', async ({ page }) => {
+
+  const folderName = 'example2';
+  const searchInput = page.getByPlaceholder('Search by title, description, venue, meeting method');
+  await searchInput.fill(folderName);
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('link', { name:folderName })).toBeVisible();
+
+});
+
 
 
 })
