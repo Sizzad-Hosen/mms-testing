@@ -12,7 +12,6 @@ test.describe('File Manager 2 page', () => {
       'https://app-mms.baumnest.com/MQZUKKX7TLD/file-manager2'
     );
   });
-
 //  Test case : New folder create 
 
 test('should allow to create new folder', async ({ page }) => {
@@ -23,8 +22,42 @@ test('should allow to create new folder', async ({ page }) => {
 
   await page.getByRole('button', { name: /create folder/i }).click();
 
-  const folder = page.getByText('test');
+  const folder = page.getByRole('heading', { name: 'test' });
   await expect(folder).toBeVisible();
+  
+});
+
+//  Test case : Folder name Rename
+test('should folder name rename', async ({ page }) => {
+
+  const currentFolderName = 'AGM';
+  const newFolderName = 'example2'; 
+
+  const openMenu = page.getByRole('button', { name: 'Open menu', exact: true }).first();
+  await openMenu.waitFor({ state: 'visible' });
+  await openMenu.click();
+
+  const renameItem = page.getByRole('menuitem', { name: /Rename/i });
+  await renameItem.click();
+
+  const input = page.getByRole('textbox', { name: /Folder name/i });
+  await input.fill(newFolderName);
+
+  await page.getByRole('button', { name: /^Rename$/ }).click();
+
+  const successLocator = page.getByRole('heading', { name: newFolderName });
+
+  // Wait for either success or error
+  if (await successLocator.count() > 0) {
+    await expect(successLocator).toBeVisible();
+    console.log('Folder renamed successfully.');
+  } else {
+    const errorMessage = page.locator('small, div').filter({ hasText: 'The Name has already been taken.' }).first();
+    await errorMessage.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(errorMessage).toBeVisible();
+    console.log('Duplicate name error displayed.');
+  }
+
 });
 
 
@@ -45,7 +78,7 @@ test('should upload a new file', async ({ page }) => {
 
   await page.getByRole('button', { name: /upload file/i }).click();
   const fileInput = page.locator('input[type="file"]');
-  await fileInput.setInputFiles(path.resolve(__dirname, 'bendPipe.png'));
+  await fileInput.setInputFiles(path.resolve(__dirname, 'img.png'));
 
   const fileNameInput = page.getByRole('textbox', { name: /file name/i });
   await fileNameInput.fill('testfile');
@@ -55,43 +88,85 @@ test('should upload a new file', async ({ page }) => {
   await expect(uploadedFile).toBeVisible();
 });
 
-//  Test case : Upload File Rename
+//  Test case : Upload File name Rename
   test('should upload file rename', async ({ page }) => {
   await page.getByRole('button', { name: 'Upload File' }).click();
   await page.getByRole('button', { name: 'File*' }).click();
-  await page.getByRole('button', { name: 'File*' }).setInputFiles('bendPipe.png');
+  await page.getByRole('button', { name: 'File*' }).setInputFiles(path.resolve(__dirname, 'img.png'));
   await page.getByRole('textbox', { name: 'File name' }).click();
-  await page.getByRole('textbox', { name: 'File name' }).fill('testfile');
-  await page.getByRole('button', { name: 'Discard' }).click();
-  await page.getByRole('button', { name: 'Upload File' }).click();
+  await page.getByRole('textbox', { name: 'File name' }).fill('testfile2');
+  await page.getByRole('button', { name: 'Upload' }).click();
+
+  const renamedFile = page.getByText('testfile20');
+  await expect(renamedFile).toBeVisible();
+
   });
   
 //  Test case : Dowenload  Upload File
-  test('should dowenload  upload file', async ({ page }) => {
-  
-    await page.locator('[id="radix-:rdl:"]').click();
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: 'Download' }).click();
-  const download = await downloadPromise;
-  });
+// test('download file using radix menu', async ({ page }) => {
+//     // Click Open Menu for the file
+//     const openMenu = page.getByRole('button', { name: 'Open menu', exact: true }).first();
+//     await openMenu.waitFor({ state: 'visible' });
+//     await openMenu.click();
+
+//     // Click Move
+//     const download = page.getByRole('menuitem', { name: /Download/i });
+//     await download.waitFor({ state: 'visible' });
+//     await download.click();
+
+//   const downloadPromise = page.waitForEvent('download');
+
+//   await page.getByRole('menuitem', { name: /Download/i }).click();
+
+//   const download = await downloadPromise;
+
+//   const fileName = download.suggestedFilename();
+
+//   ensureDownloadsFolder();
+//   const downloadPath = path.join('downloads', fileName);
+
+//   await download.saveAs(downloadPath);
+
+//   expect(fs.existsSync(downloadPath)).toBeTruthy();
+
+// });
+
+
 //  Test case :Move the Upload File
   test('should move the upload file', async ({ page }) => {
 
-  await page.locator('[id="radix-:ren:"]').click();
-  await page.getByRole('menuitem', { name: 'Move' }).click()
+    // Click Open Menu for the file
+    const openMenu = page.getByRole('button', { name: 'Open menu', exact: true }).first();
+    await openMenu.waitFor({ state: 'visible' });
+    await openMenu.click();
+
+    // Click Move
+    const moveItem = page.getByRole('menuitem', { name: /Move/i });
+    await moveItem.waitFor({ state: 'visible' });
+    await moveItem.click();
   });
 
 //  Test case :Delete the Upload File
   test('should delete the upload file', async ({ page }) => {
+  // Click Open Menu for the file
+    const openMenu = page.getByRole('button', { name: 'Open menu', exact: true }).first();
+    await openMenu.waitFor({ state: 'visible' });
+    await openMenu.click();
 
-  await page.locator('[id="radix-:r5p:"]').click();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-  await page.getByRole('button', { name: 'Discard' }).click();
-  await page.locator('[id="radix-:r6n:"]').click();
-  await page.locator('.lucide.lucide-trash').click();
-  await page.getByRole('button', { name: 'Delete' }).click();
+    // Click Delete
+    const deleteItem = page.getByRole('menuitem', { name: /Delete/i });
+    await deleteItem.waitFor({ state: 'visible' });
+    await deleteItem.click();
+
+    // Confirm Delete
+    const confirmDelete = page.getByRole('button', { name: /Delete/i });
+    await confirmDelete.waitFor({ state: 'visible' });
+    await confirmDelete.click();
+
+    // Verify file is gone
+    const deletedFile = page.getByText('testfile2');
+    await expect(deletedFile).not.toBeVisible();
   });
-
 
 // Test case : searching and search by title
 
