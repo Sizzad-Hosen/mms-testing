@@ -9,7 +9,7 @@ test.describe('File Manager 2 page', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(
-      'https://app-mms.baumnest.com/MQZUKKX7TLD/file-manager2'
+      'https://app-mms.baumnest.com/MQZUKKX7TLD/file-manager'
     );
   });
 //  Test case : New folder create 
@@ -179,6 +179,35 @@ test('should upload a new file', async ({ page }) => {
   await expect(page.getByRole('link', { name:folderName })).toBeVisible();
 
 });
+// Test case : Best case use it
+ test('should filter meetings by keyword', async ({ page }) => {
+
+    const keyword = 'example2';
+
+    const searchInput = page.getByPlaceholder(
+      'Search by title, description, venue, meeting method'
+    );
+
+
+    await searchInput.fill(keyword);
+
+    // Wait for API response
+    await Promise.all([
+      page.waitForResponse(res =>
+        res.url().includes('/file-manager') && res.status() === 200
+      ),
+      searchInput.press('Enter')
+    ]);
+
+    // Assert results container visible
+    // const results = page.locator('[data-testid="meeting-card"]');
+
+
+    await expect(results.first()).toBeVisible();
+
+    await expect(results).toContainText(new RegExp(keyword, 'i'));
+
+  });
 
 
 
