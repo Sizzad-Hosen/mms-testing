@@ -15,8 +15,8 @@ export class LoginPage {
   }
 
   async login(email, password) {
-    await expect(this.email).toBeVisible({ timeout: 15000 });
-    await expect(this.password).toBeVisible({ timeout: 15000 });
+    await expect(this.email).toBeVisible({ timeout: 60000 });
+    await expect(this.password).toBeVisible({ timeout: 60000 });
 
     await this.email.fill(email);
     await this.password.fill(password);

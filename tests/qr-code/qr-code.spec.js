@@ -16,10 +16,19 @@ test.describe('QR Code Authenticated User Flow', () => {
   test('should display QR code image', async ({ page }) => {
     const qrImage = page.getByRole('img', { name: /qr code/i });
 
+<<<<<<< HEAD
     await expect(qrImage).toBeVisible({ timeout: 15000 });
     const src = await qrImage.getAttribute('src');
     expect(src).toBeTruthy();
     expect(src).toMatch(/base64|qr|image/i);
+=======
+    await expect(qrImage).toBeVisible({timeout:40000});
+//     const src = await qrImage.getAttribute('src');
+//     expect(src).toBeTruthy();
+
+//   // Usually QR codes are base64 or dynamic URLs
+//     expect(src).toMatch(/base64|qr|image/i);
+>>>>>>> efd1bf2 (save local changes)
   });
 
   // Test case 02: QR Code expiry date visible

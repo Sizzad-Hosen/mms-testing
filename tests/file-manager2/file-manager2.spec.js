@@ -75,7 +75,7 @@ test('should upload a new file', async ({ page }) => {
   const download = await downloadPromise;
   });
 //  Test case :Move the Upload File
-  test('should dowenload  upload file', async ({ page }) => {
+  test('should move the upload file', async ({ page }) => {
 
   await page.locator('[id="radix-:ren:"]').click();
   await page.getByRole('menuitem', { name: 'Move' }).click()

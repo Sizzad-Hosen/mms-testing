@@ -14,7 +14,11 @@
         },
         {
           "name": "tenantUserToken",
+<<<<<<< HEAD
           "value": "331|hIY6fXO8wtx4AZUWr2e2HtwZvNYOrzMthbk5VJsAd25626bf"
+=======
+          "value": "257|eDkMzVQHuK66u3PRxJO2hJ0gXzRlPVrFdVzgj2B8745cb2c9"
+>>>>>>> efd1bf2 (save local changes)
         },
         {
           "name": "tenantName",
