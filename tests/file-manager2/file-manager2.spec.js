@@ -187,8 +187,6 @@ test('should upload a new file', async ({ page }) => {
     const searchInput = page.getByPlaceholder(
       'Search by title, description, venue, meeting method'
     );
-
-
     await searchInput.fill(keyword);
 
     // Wait for API response
@@ -209,7 +207,29 @@ test('should upload a new file', async ({ page }) => {
 
   });
 
+// Test case : Sort by active, pending , past
 
+test("Should Sort by active , pending , past ", async({page})=>{
+
+  const options = ['Show Active', 'Show Pending', 'Show Past'];
+
+  for (const option of options) {
+
+    await page.getByRole('combobox').click();
+
+    // Select the option
+    await page.getByRole('option', { name: option }).click();
+    await page.waitForLoadState('networkidle');
+
+    // Assert dropdown now shows the selected option
+    await expect(page.getByRole('combobox')).toHaveText(option);
+
+    const results = page.locator('[data-testid="meeting-card"]');
+    await expect(results.first()).toBeVisible();
+  }
+
+
+})
 
 })
 
