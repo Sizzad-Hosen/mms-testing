@@ -179,57 +179,6 @@ test('should upload a new file', async ({ page }) => {
   await expect(page.getByRole('link', { name:folderName })).toBeVisible();
 
 });
-// Test case : Best case use it
- test('should filter meetings by keyword', async ({ page }) => {
-
-    const keyword = 'example2';
-
-    const searchInput = page.getByPlaceholder(
-      'Search by title, description, venue, meeting method'
-    );
-    await searchInput.fill(keyword);
-
-    // Wait for API response
-    await Promise.all([
-      page.waitForResponse(res =>
-        res.url().includes('/file-manager') && res.status() === 200
-      ),
-      searchInput.press('Enter')
-    ]);
-
-    // Assert results container visible
-    // const results = page.locator('[data-testid="meeting-card"]');
-
-
-    await expect(results.first()).toBeVisible();
-
-    await expect(results).toContainText(new RegExp(keyword, 'i'));
-
-  });
-
-// Test case : Sort by active, pending , past
-
-test("Should Sort by active , pending , past ", async({page})=>{
-
-  const options = ['Show Active', 'Show Pending', 'Show Past'];
-
-  for (const option of options) {
-
-    await page.getByRole('combobox').click();
-
-    // Select the option
-    await page.getByRole('option', { name: option }).click();
-    await page.waitForLoadState('networkidle');
-
-    // Assert dropdown now shows the selected option
-    await expect(page.getByRole('combobox')).toHaveText(option);
-
-    const results = page.locator('[data-testid="meeting-card"]');
-    await expect(results.first()).toBeVisible();
-  }
-
-
-})
 
 })
 

@@ -13,7 +13,7 @@ test.describe('Auth Module - Login', () => {
 
   // code verification
     await page.waitForURL('https://app-mms.baumnest.com/MQZUKKX7TLD/2fa');
-    await page.getByRole('spinbutton', { name: 'Code*' }).fill('927008'); 
+    await page.getByRole('spinbutton', { name: 'Code*' }).fill('407990'); 
     await page.getByRole('button', { name: 'Verify' }).click();
     await expect(page).toHaveURL('https://app-mms.baumnest.com/MQZUKKX7TLD')
 
