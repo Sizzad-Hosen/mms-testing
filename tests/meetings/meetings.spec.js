@@ -2,7 +2,7 @@ import { expect, test, } from '@playwright/test';
 import { meetingData } from '../../pages/meetings/meetingsData';
 import { addAgenda, addParticipant } from '../../pages/meetings/helpers';
 
-// 🔐 authenticated session
+
 test.use({
   storageState: 'storageState.json',
 });
@@ -166,8 +166,6 @@ test.describe('Edit Meeting Flow', () => {
 
   });
 
-
-
 // Test case : Sort by active, pending , past
 
 test("Should Sort by active , pending , past ", async({page})=>{
@@ -192,37 +190,28 @@ test("Should Sort by active , pending , past ", async({page})=>{
 
 })
 
+// delete test case 
 
 test("Should Delete a meeting", async ({ page }) => {
 
-  // 1️⃣ Go to Draft tab
   await page.getByRole('tab', { name: 'Draft' }).click();
 
-  // 2️⃣ Wait for meetings to load
-  const meetingRow = page.locator('div:has-text("Important Meeting for Discussing Business Matters")'); // better: match meeting title
-  await expect(meetingRow).toBeVisible();
+    const deleteButton = page.locator('button:has(svg)').nth(4);
 
-  // 3️⃣ Click action menu in the row
-  const actionButton = meetingRow.locator('button:has-text("…")'); // assuming menu button
-  await actionButton.click();
-
-  // 4️⃣ Click Delete
-  const deleteButton = page.getByRole('button', { name: 'Delete' });
   await expect(deleteButton).toBeVisible();
+  const allMenuButtons =page.locator('button:has(svg)')
+
+  const initialCount = await allMenuButtons.count();
   await deleteButton.click();
+  await page.getByRole('button', { name: 'Delete' }).click();
 
-  // 5️⃣ Confirm Delete if modal appears
-  const confirmButton = page.getByRole('button', { name: 'Confirm' });
-  if (await confirmButton.isVisible()) {
-    await confirmButton.click();
-  }
 
-  // 6️⃣ Assertion: Ensure meeting no longer exists
-  await expect(meetingRow).not.toBeVisible({ timeout: 5000 });
+  await expect(allMenuButtons)
+    .toHaveCount(initialCount - 1, { timeout: 10000 });
 
 });
 
-
+// test case : cancle a meeting
 test("Should Cancel a Meeting", async ({ page }) => {
   await page.getByRole("button", { name: "Open Menu" }).first().click();
   await page.getByRole("menuitem", { name: "cancel meeting" }).click();
