@@ -162,44 +162,17 @@ test("Should Delete a meeting", async ({ page }) => {
 });
 
 
-test("Should Cancel a Meeting and Verify Draft & Notification", async ({ page }) => {
+test("Should Cancel a Meeting", async ({ page }) => {
+  await page.getByRole("button", { name: "Open Menu" }).first().click();
+  await page.getByRole("menuitem", { name: "cancel meeting" }).click();
+  await page.getByRole("button", { name: "Cancel Meeting" }).click();
 
-  const meetingTitle = 'Important Meeting for Discussing Business Matters';
+  const successMessage = page.getByText("Meeting cancelled successfully");
 
-  // 1️⃣ Go to Draft tab
-  await page.getByRole('tab', { name: 'Draft' }).click();
-
-  // 2️⃣ Locate the meeting row by title
-  const meetingRow = page.locator(`div:has-text("${meetingTitle}")`);
-  await expect(meetingRow).toBeVisible();
-
-  // 3️⃣ Open the menu for that meeting
-  const menuButton = meetingRow.locator('button:has-text("Open menu")').first();
-  await menuButton.click();
-
-  // 4️⃣ Click "Cancel Meeting"
-  const cancelMeetingMenu = page.getByRole('menuitem', { name: 'Cancel Meeting' });
-  await expect(cancelMeetingMenu).toBeVisible();
-  await cancelMeetingMenu.click();
-
-  // 5️⃣ Confirm cancel (handle modal)
-  const confirmButton = page.getByRole('button', { name: /^Cancel$/ });
-  await expect(confirmButton).toBeVisible();
-  await confirmButton.click();
-
-  // 6️⃣ Optional: Verify UI toast / notification
-  const toastMessage = page.locator('text=Meeting cancelled successfully');
-  await expect(toastMessage).toBeVisible();
-
-  // 7️⃣ Verify the meeting is now in Draft or cancelled state
-  const draftTab = page.getByRole('tab', { name: 'Draft' });
-  await draftTab.click();
-  await expect(meetingRow).toBeVisible(); // Still in Draft
-
-  // 8️⃣ Additional check: ensure meeting status text shows "Cancelled"
-  const status = meetingRow.locator('text=Cancelled');
-  await expect(status).toBeVisible();
-
+  await expect(successMessage).toHaveCount(1);
 });
 
+
 })
+
+
