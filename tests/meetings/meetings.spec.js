@@ -74,6 +74,67 @@ test.describe('Create Meeting Flow', () => {
 
 });
 
+
+test.describe('Edit Meeting Flow', () => {
+
+  test('should edit a meeting successfully', async ({ page }) => {
+
+    // 🔹 Start meeting creation
+    await page.getByRole('button', { name: 'New Meeting' }).click();
+
+    // 🔹 Meeting details
+    await page.getByRole('textbox', { name: 'Title*' }).fill(meetingData.title);
+
+    await page.getByRole('combobox', { name: 'Type*' }).click();
+    await page.getByRole('option', { name: meetingData.type }).click();
+
+    await page.getByRole('textbox', { name: 'Description' }).fill(meetingData.description);
+
+    // 🔹 Date & time
+    await page.getByRole('button', { name: 'Date*' }).click();
+    await page.getByRole('button', { name: meetingData.dateLabel }).click();
+
+    await page.getByRole('textbox', { name: 'Start Time*' }).fill(meetingData.startTime);
+    await page.getByRole('textbox', { name: 'End Time*' }).fill(meetingData.endTime);
+
+    // 🔹 Method
+    await page.getByRole('radio', { name: meetingData.method }).click();
+    await page.getByRole('textbox', { name: 'Link*' }).fill(meetingData.link);
+
+    await page.getByRole('button', { name: /Save & Continue/i }).click();
+
+    // 🔹 Participants
+    for (const participant of meetingData.participants) {
+      await addParticipant(page, participant);
+    }
+
+    await page.getByRole('textbox', { name: /name/i }).fill('John Doe');
+    await page.getByRole('textbox', { name: /email/i }).fill('john.doe@example.com');
+
+    await page.getByRole('button', { name: /Save & Continue/i }).click();
+
+    // 🔹 Agenda
+    for (const agenda of meetingData.agenda) {
+      await addAgenda(page, agenda);
+    }
+
+    await page.getByRole('button', { name: /Save & Continue/i }).click();
+
+    // 🔹 Review & Create
+    await expect(page.getByText('Review')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Create Meeting' }).click();
+    await page.getByRole('button', { name: 'Create' }).click();
+
+    // 🔹 Final assertion
+    await expect(page.getByText(meetingData.title)).toBeVisible();
+    await expect(page.getByText(meetingData.description)).toBeVisible();
+
+  });
+
+});
+
+
 // Test case : Search meeting by title , des, venue , meeting type
 
  test('should filter meetings by keyword', async ({ page }) => {
