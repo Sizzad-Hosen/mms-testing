@@ -2,7 +2,7 @@ import { expect, test, } from '@playwright/test';
 import { meetingData } from '../../pages/meetings/meetingsData';
 import { addAgenda, addParticipant } from '../../pages/meetings/helpers';
 
-
+  
 test.use({
   storageState: 'storageState.json',
 });
@@ -19,10 +19,10 @@ test.describe('Create Meeting Flow', () => {
 
   test('should create a meeting successfully', async ({ page }) => {
 
-    // 🔹 Start meeting creation
+    //  Start meeting creation
     await page.getByRole('button', { name: 'New Meeting' }).click();
 
-    // 🔹 Meeting details
+    //  Meeting details
     await page.getByRole('textbox', { name: 'Title*' }).fill(meetingData.title);
 
     await page.getByRole('combobox', { name: 'Type*' }).click();
@@ -30,20 +30,20 @@ test.describe('Create Meeting Flow', () => {
 
     await page.getByRole('textbox', { name: 'Description' }).fill(meetingData.description);
 
-    // 🔹 Date & time
+    //  Date & time
     await page.getByRole('button', { name: 'Date*' }).click();
     await page.getByRole('button', { name: meetingData.dateLabel }).click();
 
     await page.getByRole('textbox', { name: 'Start Time*' }).fill(meetingData.startTime);
     await page.getByRole('textbox', { name: 'End Time*' }).fill(meetingData.endTime);
 
-    // 🔹 Method
+    //  Method
     await page.getByRole('radio', { name: meetingData.method }).click();
     await page.getByRole('textbox', { name: 'Link*' }).fill(meetingData.link);
 
     await page.getByRole('button', { name: /Save & Continue/i }).click();
 
-    // 🔹 Participants
+    //  Participants
     for (const participant of meetingData.participants) {
       await addParticipant(page, participant);
     }
@@ -53,20 +53,20 @@ test.describe('Create Meeting Flow', () => {
 
     await page.getByRole('button', { name: /Save & Continue/i }).click();
 
-    // 🔹 Agenda
+    //  Agenda
     for (const agenda of meetingData.agenda) {
       await addAgenda(page, agenda);
     }
 
     await page.getByRole('button', { name: /Save & Continue/i }).click();
 
-    // 🔹 Review & Create
+    //  Review & Create
     await expect(page.getByText('Review')).toBeVisible();
 
     await page.getByRole('button', { name: 'Create Meeting' }).click();
     await page.getByRole('button', { name: 'Create' }).click();
 
-    // 🔹 Final assertion
+    //  Final assertion
     await expect(page.getByText(meetingData.title)).toBeVisible();
     await expect(page.getByText(meetingData.description)).toBeVisible();
 
@@ -193,21 +193,16 @@ test("Should Sort by active , pending , past ", async({page})=>{
 // delete test case 
 
 test("Should Delete a meeting", async ({ page }) => {
-
   await page.getByRole('tab', { name: 'Draft' }).click();
 
-    const deleteButton = page.locator('button:has(svg)').nth(4);
+  await page.getByRole('button').filter({ hasText: /^$/ }).nth(4).click();
+  const confirmDelete = page.getByRole('button', { name: /delete/i });
+  await expect(confirmDelete).toBeVisible();
 
-  await expect(deleteButton).toBeVisible();
-  const allMenuButtons =page.locator('button:has(svg)')
-
-  const initialCount = await allMenuButtons.count();
-  await deleteButton.click();
-  await page.getByRole('button', { name: 'Delete' }).click();
-
-
-  await expect(allMenuButtons)
-    .toHaveCount(initialCount - 1, { timeout: 10000 });
+  await confirmDelete.click();
+  await expect(
+    page.getByText("Meeting deleted successfully!")
+  ).toBeVisible({ timeout: 10000 });
 
 });
 
