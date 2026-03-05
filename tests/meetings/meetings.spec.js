@@ -197,36 +197,53 @@ test.describe('Copy duplicate Meeting Flow', () => {
 });
 
 // Test case : Search meeting by title , des, venue , meeting type
+test('Should Search meeting by title , des, venue , meeting type', async ({ page }) => {
 
- test('should filter meetings by keyword', async ({ page }) => {
+  const keyword = 'Important';
 
-    const keyword = 'general';
+  const searchInput = page.getByPlaceholder(
+    'Search by title, description, venue, meeting method'
+  );
 
-    const searchInput = page.getByPlaceholder(
-      'Search by title, description, venue, meeting method'
-    );
+  await searchInput.fill(keyword);
 
+  await Promise.all([
+    page.waitForResponse(res =>
+      res.url().includes('/meetings') && res.status() === 200
+    ),
+    searchInput.press('Enter')
+  ]);
 
-    await searchInput.fill(keyword);
+    const results = page.getByText(new RegExp(keyword, 'i'))
+    await expect(results.nth(0)).toBeVisible();
+    await expect(results.nth(0)).toContainText(new RegExp(keyword, 'i'));
+  
 
-    // Wait for API response
-    await Promise.all([
-      page.waitForResponse(res =>
-        res.url().includes('/meetings') && res.status() === 200
-      ),
-      searchInput.press('Enter')
-    ]);
+});
 
-    // Assert results container visible
-    // const results = page.locator('[data-testid="meeting-card"]');
+  // Test case : Search meeting by title , des, venue , meeting type not found
+test('Should show no results message when keyword not found', async ({ page }) => {
 
+  const keyword = 'zzzz1234';
 
-    await expect(results.first()).toBeVisible();
+  const searchInput = page.getByPlaceholder(
+    'Search by title, description, venue, meeting method'
+  );
 
-    await expect(results).toContainText(new RegExp(keyword, 'i'));
+  await searchInput.fill(keyword);
 
-  });
+  await Promise.all([
+    page.waitForResponse(res =>
+      res.url().includes('/meetings') && res.status() === 200
+    ),
+    searchInput.press('Enter')
+  ]);
 
+  const noResults = page.getByText(/No meetings/i);
+
+  await expect(noResults).toBeVisible();
+
+});
 // Test case : Sort by active, pending , past
 
 test("Should Sort by active , pending , past ", async({page})=>{
