@@ -244,12 +244,10 @@ test('Should show no results message when keyword not found', async ({ page }) =
   await expect(noResults).toBeVisible();
 
 });
+
 // Test case : Sort by active, pending , past
-
 test("Should Sort by active , pending , past ", async({page})=>{
-
   const options = ['Show Active', 'Show Pending', 'Show Past'];
-
   for (const option of options) {
 
     await page.getByRole('combobox').click();
@@ -257,10 +255,7 @@ test("Should Sort by active , pending , past ", async({page})=>{
     // Select the option
     await page.getByRole('option', { name: option }).click();
     await page.waitForLoadState('networkidle');
-
-    // Assert dropdown now shows the selected option
     await expect(page.getByRole('combobox')).toHaveText(option);
-
     const results = page.locator('[data-testid="meeting-card"]');
     await expect(results.first()).toBeVisible();
   }
@@ -269,7 +264,6 @@ test("Should Sort by active , pending , past ", async({page})=>{
 })
 
 // delete test case 
-
 test("Should Delete a meeting", async ({ page }) => {
   await page.getByRole('tab', { name: 'Draft' }).click();
 
@@ -294,6 +288,8 @@ test("Should Cancel a Meeting", async ({ page }) => {
 
   await expect(successMessage).toHaveCount(1);
 });
+
+
 
 
 })
