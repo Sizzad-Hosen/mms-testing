@@ -17,5 +17,8 @@ test.describe('Issues Feauture Test', () => {
 test('Create a president only issues',async()=>{
 
 })
+test('Create a president only issues',async()=>{
+
+})
 
 })
