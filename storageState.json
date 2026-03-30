@@ -9,12 +9,20 @@
           "value": "en-US"
         },
         {
+          "name": "loginEmail",
+          "value": "sizzadhosen@gmail.com"
+        },
+        {
           "name": "tenantId",
           "value": "MQZUKKX7TLD"
         },
         {
           "name": "tenantUserToken",
-          "value": "369|s6PLOvORfKfau8g3dZz8oWQ20VsrXfVS0nnuzRhr0159611e"
+          "value": "396|Wzb0DrXaRdAmGTtxcjxe8LDuOsKlPDgT3B37Tfik0df69be5"
+        },
+        {
+          "name": "pusherTransportTLS",
+          "value": "{\"timestamp\":1774847000411,\"transport\":\"ws\",\"latency\":472,\"cacheSkipCount\":0}"
         },
         {
           "name": "tenantName",

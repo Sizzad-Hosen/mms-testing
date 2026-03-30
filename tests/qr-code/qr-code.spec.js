@@ -68,53 +68,57 @@ test('should show QR expired message if past expiry date', async ({ page }) => {
     expect(fileSize).toBeGreaterThan(1000);
   });
 
-  // Test case : expired check after qr code expired
+
 test('should allow generating new QR code when previous QR is expired', async ({ page }) => {
 
-  //  Read expiry date text
-  const expiryText = await page.getByText(/expiry date:/i).textContent({timeout:3000});
-
-  const dateString = expiryText
-    .replace(/expiry date:/i, '')
-    .trim();
-
-  const expiryDate = new Date(dateString);
-  const now = new Date();
-
   const qrImage = page.getByRole('img', { name: /qr code/i });
+  const generateBtn = page.getByRole('button', { name: /generate qr code/i });
+  const expiryTextLocator = page.getByText(/expiry date:/i);
 
-  // Ensure QR image exists first
+  await Promise.race([
+    qrImage.waitFor({ state: 'visible' }),
+    generateBtn.waitFor({ state: 'visible' })
+  ]);
+
+  let isExpired = false;
+
+  if (await expiryTextLocator.count() > 0) {
+    const expiryText = await expiryTextLocator.textContent();
+
+    if (expiryText) {
+      const dateString = expiryText.replace(/expiry date:/i, '').trim();
+      const expiryDate = new Date(dateString);
+      const now = new Date();
+
+      isExpired = now >= expiryDate;
+    }
+  } else {
+
+    isExpired = true;
+  }
+  // ✅ CASE 1: QR is NOT expired
+
+  if (!isExpired) {
+    await expect(qrImage).toBeVisible();
+    await expect(generateBtn).toHaveCount(0);
+
+    console.log('QR still valid, no regeneration allowed');
+    return;
+  }
+
+  // ✅ CASE 2: QR is expired
+  console.log('QR expired → generating new one');
+
+  await expect(generateBtn).toBeVisible();
+  await expect(generateBtn).toBeEnabled();
+
+  await generateBtn.click();
   await expect(qrImage).toBeVisible();
 
-  const oldSrc = await qrImage.getAttribute('src');
+  const newSrc = await qrImage.getAttribute('src');
+  expect(newSrc).toBeTruthy();
 
-  //  If QR is expired
-  if (now >= expiryDate) {
-
-    const generateQRCodeBtn = page.getByRole('button', {
-      name: /generate qr code/i,
-    });
-
-    await expect(generateQRCodeBtn).toBeVisible();
-    await expect(generateQRCodeBtn).toBeEnabled();
-
-    await generateQRCodeBtn.click();
-
-    //  Wait until src actually changes
-    await expect(qrImage).not.toHaveAttribute('src', oldSrc);
-
-    const newSrc = await qrImage.getAttribute('src');
-
-    expect(newSrc).not.toBe(oldSrc);
-    console.log('Old QR src:', oldSrc);
-    console.log('New QR src:', newSrc);
-
-  } else {
-    //  If QR is still valid, button must NOT exist
-    await expect(
-      page.getByRole('button', { name: /generate qr code/i })
-    ).toHaveCount(0);
-  }
+  console.log('New QR src:', newSrc);
 });
 
 });

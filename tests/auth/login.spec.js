@@ -11,11 +11,20 @@ test.describe('Auth Module - Login', () => {
     await loginPage.goto();
     await loginPage.login(email, password);
 
-  // code verification
-    await page.waitForURL('https://app-mms.baumnest.com/MQZUKKX7TLD/2fa');
-    await page.getByRole('spinbutton', { name: 'Code*' }).fill('826532'); 
-    await page.getByRole('button', { name: 'Verify' }).click();
-    await expect(page).toHaveURL('https://app-mms.baumnest.com/MQZUKKX7TLD')
+// wait for either 2FA page OR dashboard
+await Promise.race([
+  page.waitForURL('**/2fa'),
+  page.waitForURL('**/MQZUKKX7TLD')
+]);
+
+// check if we are on 2FA page
+if (page.url().includes('/2fa')) {
+  await page.getByRole('spinbutton', { name: 'Code*' }).fill('826532');
+  await page.getByRole('button', { name: 'Verify' }).click();
+}
+
+// final assertion
+await expect(page).toHaveURL('https://app-mms.baumnest.com/MQZUKKX7TLD');
 
     //  Save session for reuse in other tests
     await context.storageState({ path: 'storageState.json' });
