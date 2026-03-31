@@ -162,6 +162,18 @@ test("copy president only issues", async ({ page }) => {
     page.getByText(/duplicated|copied/i)
   ).toBeVisible();
 });
+// test case : delete draft presidentonly issues
+test("deleted draft president only issues", async ({ page }) => {
+  await page.getByRole('heading', { name: 'President Only' }).click();
+  await openIssueMenu(page);
+
+  await page.getByRole('menuitem', { name: /delete/i }).click();
+  await page.getByRole('button', { name: /delete/i }).click();
+
+  await expect(
+    page.getByText(/deleted/i)
+  ).toBeVisible();
+});
 
 
 })
