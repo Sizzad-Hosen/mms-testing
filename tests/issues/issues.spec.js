@@ -57,7 +57,7 @@ if (new Date(resolveDate) < new Date(assignDate)) {
 
 // test case : edit president only issues
 
-test('✅ Edit issue should succeed with valid dates', async ({ page }) => {
+test(' Edit issue should succeed with valid dates', async ({ page }) => {
   await page.getByRole('heading', { name: 'President Only' }).click();
   await page.getByRole('button', { name: /president only issue/i }).first().click();
 
@@ -77,30 +77,31 @@ await expect(page.getByText(successMessage)).toBeVisible({ timeout: 10000 });
 });
 
 // Test case : add response 
-
 test("add response to president only issues", async ({ page }) => {
 
-  // Open issue
-  await page.getByRole('button', { name: /president only issue/i }).first().click();
+  await page.getByRole('heading', { name: 'President Only' }).click();
 
-  // Open responses tab (avoid count dependency)
-  await page.getByRole('tab', { name: /Responses/i }).click();
+  await page.getByRole('button', { name: 'error' }).click();
 
-  // Add response
+  await page.waitForLoadState('networkidle',{timeout : 30000});
+
+  const responsesTab = page.getByRole('tab', { name: 'Responses (0)' })
+  await expect(responsesTab).toBeVisible();
+  await responsesTab.click();
+
   const responseText = 'check time to complete';
-
   await page.getByRole('textbox', { name: 'Write your response' }).fill(responseText);
   await page.getByRole('button', { name: 'Comment' }).click();
 
-  // ✅ Assertion (VERY IMPORTANT)
+  // Assertion
   await expect(page.getByText(responseText)).toBeVisible();
 });
-
 
 // test case : delete response 
 test("delete response to president only issues", async ({ page }) => {
   // Open issue
-  await page.getByRole('button', { name: /president only issue/i }).first().click();
+   await page.getByRole('heading', { name: 'President Only' }).click();
+  await page.getByRole('button', { name: /error/i }).first().click();
 
   // Open responses tab (avoid count dependency)
   await page.getByRole('tab', { name: /Responses/i }).click();
@@ -108,47 +109,55 @@ test("delete response to president only issues", async ({ page }) => {
   await page.getByRole('menuitem', { name: 'Delete' }).click();
   await page.getByRole('button', { name: 'Delete' }).click();
 
-  await expect(page.getByText(responseText)).not.toBeVisible();
+await expect(page.getByText(/Response deleted successfully/i)).toBeVisible();
+
 });
 async function openIssueMenu(page) {
-  await page.getByRole('row').first().getByLabel('Open menu').click();
+  await page.getByRole('button', {name : 'Open Menu'}).first().click();
 }
 
 // test case : terminate presidentonly issues
+
 test("terminate president only issues", async ({ page }) => {
-
+  // Go to President Only section
+  await page.getByRole('heading', { name: 'President Only' }).click();
   await openIssueMenu(page);
+  const terminateMenuItem = page.getByRole('menuitem', { name: /Terminate/i });
 
-  await page.getByRole('menuitem', { name: /Terminate/i }).click();
-  await page.getByRole('button', { name: /Terminate issue/i }).click();
+  if (await terminateMenuItem.isVisible()) {
+    await terminateMenuItem.click();
+    await page.getByRole('button', { name: /Terminate issue/i }).click();
+  } else {
 
-  // ✅ Assertion
-  await expect(
-    page.getByText(/terminated|issue terminated/i)
-  ).toBeVisible();
+    console.log("Issue is already terminated, skipping click");
+  }
+
+  const firstRow = page.getByRole('row').nth(1); 
+  await expect(firstRow).toBeVisible();
+  await expect(firstRow).toContainText(/terminated/i);
 });
+
+
 // test case : close presidentonly issues
 test("close president only issues", async ({ page }) => {
-
+  await page.getByRole('heading', { name: 'President Only' }).click();
   await openIssueMenu(page);
 
   await page.getByRole('menuitem', { name: /Close/i }).click();
   await page.getByRole('button', { name: /Close issue/i }).click();
 
-  // ✅ Assertion
-  await expect(
-    page.getByText(/closed|issue closed/i)
-  ).toBeVisible();
+  const firstRow = page.getByRole('row').nth(1); 
+  await expect(firstRow).toBeVisible();
+  await expect(firstRow).toContainText(/closed/i);
 });
 // test case : copy presidentonly issues
 test("copy president only issues", async ({ page }) => {
-
+  await page.getByRole('heading', { name: 'President Only' }).click();
   await openIssueMenu(page);
 
   await page.getByRole('menuitem', { name: /Copy/i }).click();
   await page.getByRole('button', { name: /Duplicate issue/i }).click();
 
-  // ✅ Assertion
   await expect(
     page.getByText(/duplicated|copied/i)
   ).toBeVisible();

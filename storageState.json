@@ -18,11 +18,7 @@
         },
         {
           "name": "tenantUserToken",
-          "value": "396|Wzb0DrXaRdAmGTtxcjxe8LDuOsKlPDgT3B37Tfik0df69be5"
-        },
-        {
-          "name": "pusherTransportTLS",
-          "value": "{\"timestamp\":1774847000411,\"transport\":\"ws\",\"latency\":472,\"cacheSkipCount\":0}"
+          "value": "400|Wk3GhDX6mbxUDRShPD4EUql4O8LaK8OvmYDziIhufc8f3bb0"
         },
         {
           "name": "tenantName",
