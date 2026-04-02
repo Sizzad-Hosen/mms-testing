@@ -12,8 +12,10 @@ test.describe('Issues Feauture Test', () => {
     );
   })
 
+// Test case : president only category
+test.describe("President only category",async()=>{
+  
 // Test Case : create President only issues 
-
 test('Create a president only issues', async ({ page }) => {
   const issueTitle = 'error';
   await page.getByRole('heading', { name: 'President Only' }).click();
@@ -175,6 +177,51 @@ test("deleted draft president only issues", async ({ page }) => {
   ).toBeVisible();
 });
 
+})
+// Test category :  Execute committe operations
+test.describe("Execute committe operations",async()=>{
+  
+test('Create a Execute committe issues', async ({ page }) => {
+  const issueTitle = 'mismatch';
+  await page.getByRole('heading', { name: 'Executive Committee Operations' }).click();
+  await page.getByRole('button', { name: 'Add Issue' }).click();
+
+  await page.getByRole('textbox', { name: 'Title*' }).fill(issueTitle);
+  await page.getByRole('textbox', { name: 'Description*' }).fill(
+    'meeting section active meeting show current meeting but previous show meet'
+  );
+
+  await page.getByRole('combobox', { name: 'Assignee*' }).click();
+  await page.getByRole('option', { name: 'Md. Sizzad Hosen' }).click();
+
+  const assignDate = await page.getByRole('textbox', { name: 'Assign date*' }).fill('2026-04-02');
+
+  const resolveDate = await page.getByRole('textbox', { name: 'Target resolution date*' }).fill('2026-04-07');
+
+if (new Date(resolveDate) < new Date(assignDate)) {
+  return "Resolve date must be after assign date";
+}
+  await page.getByRole('radio', { name: 'New' }).click();
+  await page.getByRole('radio', { name: 'Priority* High' }).click();
+
+ const checkPointDate = await page.getByRole('textbox', { name: 'Checkpoint' }).fill('2026-04-01');
+
+  const assign = new Date(assignDate);
+  const resolve = new Date(resolveDate);
+  const checkpoint = new Date(checkPointDate);
+
+  if (checkpoint < assign || checkpoint > resolve) {
+    return "Checkpoint date must be between assign and resolve date";
+  }
+  // await page.getByRole('textbox', { name: 'Enter Name' }).fill('meet to solve');
+  // await page.getByRole('textbox', { name: 'Enter link' }).fill('www.meet.com');
+
+  await page.getByRole('button', { name: 'Create' }).click();
+
+  // Assertion
+  await expect(page.getByText(issueTitle)).toBeVisible();
+});
+})
 
 })
 
