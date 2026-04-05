@@ -6,31 +6,41 @@ const email = process.env.LOGIN_EMAIL;
 const password = process.env.LOGIN_PASSWORD;
 
 test.describe('Auth Module - Login', () => {
-  test('Login succeeds with valid credentials and saves session @smoke', async ({ page, context }) => {
+
+  test('Login with optional 2FA and save session @smoke', async ({ page, context }) => {
     const loginPage = new LoginPage(page);
 
-    // Navigate
+    // 🔹 Step 1: Login
     await loginPage.goto();
     await loginPage.login(email, password);
 
-    // Wait for either 2FA OR dashboard
+    // 🔹 Step 2: Wait for either dashboard OR 2FA
     await Promise.race([
-      page.waitForURL('**/2fa'),
-      page.waitForURL('**/MQZUKKX7TLD')
+      page.waitForURL('**/2fa', { timeout: 15000 }),
+      page.waitForURL('**/MQZUKKX7TLD', { timeout: 15000 })
     ]);
 
+    // 🔹 Step 3: Check current route
     const currentUrl = page.url();
 
-    // Handle 2FA only if needed
     if (currentUrl.includes('/2fa')) {
-    await page.getByRole('textbox').fill('180056');
-    await page.getByRole('button', { name: 'Verify' }).click();
+      console.log('2FA required, verifying...');
+
+      // ✅ Fill OTP
+      await page.getByRole('textbox').fill('765249');
+      await page.getByRole('button', { name: /verify/i }).click();
+
+      // ✅ Wait for dashboard after verification
+      await page.waitForURL('**/MQZUKKX7TLD', { timeout: 15000 });
+    } else {
+      console.log('Already verified, redirected to dashboard');
     }
 
-    // Final assertion
+    // 🔹 Step 4: Final assertion
     await expect(page).toHaveURL(/MQZUKKX7TLD/);
 
-    // Save session
+    // 🔹 Step 5: Save session
     await context.storageState({ path: 'storageState.json' });
   });
+
 });
