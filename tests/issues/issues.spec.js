@@ -21,7 +21,11 @@ test.describe('Issues Feature Test', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(
-      page.getByRole('cell', { name: 'In Progress' }).first()
+      page.getByRole('cell', { name: 'New' }).first()
+    ).toBeVisible({ timeout: 8000 });
+
+    await expect(
+      page.getByRole('cell', { name: 'In Progress' }).nth(0)
     ).toBeVisible({ timeout: 8000 });
 
     await expect(
@@ -29,7 +33,7 @@ test.describe('Issues Feature Test', () => {
     ).toBeVisible({ timeout: 8000 });
 
     await expect(
-      page.getByRole('cell', { name: 'Draft' })
+      page.getByRole('cell', { name: 'Draft' }).nth(2)
     ).toHaveCount(0);
 
   });

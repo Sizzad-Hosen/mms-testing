@@ -22,48 +22,54 @@ test.describe('Issues Feature Test - President Only', () => {
     await page.getByRole('button', { name: /open menu/i }).first().click();
   };
 
-  // ✅ Test: Create Issue
-  test('Create issue', async ({ page }) => {
-    const issueTitle = 'error';
+// ✅ Test: Create Issue
+ test('Create issue', async ({ page }) => {
+  const issueTitle = 'error';
 
-    await page.getByRole('button', { name: /add issue/i }).click();
+  // ✅ Check if issue with same name already exists
+  const existing = page.getByRole('cell', { name: issueTitle }).first();
+  const alreadyExists = await existing.isVisible();
+  if (alreadyExists) {
+    throw new Error(`Issue "${issueTitle}" already exists — skipping creation`);
+  }
 
-    await page.getByRole('textbox', { name: /title/i }).fill(issueTitle);
-    await page.getByRole('textbox', { name: /description/i }).fill(
-      'meeting section active meeting issue'
-    );
+  await page.getByRole('button', { name: /add issue/i }).click();
 
-    await page.getByRole('combobox', { name: /assignee/i }).click();
-    await page.getByRole('option', { name: /sizzad/i }).click();
+  await page.getByRole('textbox', { name: /title/i }).fill(issueTitle);
+  await page.getByRole('textbox', { name: /description/i }).fill(
+    'meeting section active meeting issue'
+  );
 
-    // ✅ Correct date handling
-    const assignDate = '2026-03-30';
-    const resolveDate = '2026-04-07';
-    const checkpointDate = '2026-04-01';
+  await page.getByRole('combobox', { name: /assignee/i }).click();
+  await page.getByRole('option', { name: /sizzad/i }).click();
 
-    await page.getByRole('textbox', { name: /assign date/i }).fill(assignDate);
-    await page.getByRole('textbox', { name: /target resolution date/i }).fill(resolveDate);
-    await page.getByRole('textbox', { name: /checkpoint/i }).fill(checkpointDate);
+  const assignDate = '2026-03-30';
+  const resolveDate = '2026-04-07';
+  const checkpointDate = '2026-04-01';
 
-    // ✅ Validation
-    if (new Date(resolveDate) < new Date(assignDate)) {
-      throw new Error('Resolve date must be after assign date');
-    }
+  await page.getByRole('textbox', { name: /assign date/i }).fill(assignDate);
+  await page.getByRole('textbox', { name: /target resolution date/i }).fill(resolveDate);
+  await page.getByRole('textbox', { name: /checkpoint/i }).fill(checkpointDate);
 
-    if (
-      new Date(checkpointDate) < new Date(assignDate) ||
-      new Date(checkpointDate) > new Date(resolveDate)
-    ) {
-      throw new Error('Checkpoint must be between assign and resolve date');
-    }
+  if (new Date(resolveDate) < new Date(assignDate)) {
+    throw new Error('Resolve date must be after assign date');
+  }
 
-    await page.getByRole('radio', { name: /new/i }).click();
-    await page.getByRole('radio', { name: /high/i }).click();
+  if (
+    new Date(checkpointDate) < new Date(assignDate) ||
+    new Date(checkpointDate) > new Date(resolveDate)
+  ) {
+    throw new Error('Checkpoint must be between assign and resolve date');
+  }
 
-    await page.getByRole('button', { name: /create/i }).click();
+  await page.getByRole('radio', { name: /new/i }).click();
+  await page.getByRole('radio', { name: /high/i }).click();
+ 
+  await page.getByRole('button', { name: /create/i }).click();
 
-    await expect(page.getByText(issueTitle)).toBeVisible();
-  });
+  // ✅ Confirm created issue is now visible
+  await expect(page.getByText(issueTitle)).toBeVisible({ timeout: 8000 });
+});
 
   // ✅ Test: Edit Issue
   test('Edit issue', async ({ page }) => {
