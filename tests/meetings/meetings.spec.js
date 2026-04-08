@@ -196,15 +196,15 @@ test.describe('Copy duplicate Meeting Flow', () => {
 
 });
 
-// Test case : Search meeting by title , des, venue , meeting type
-test('Should Search meeting by title , des, venue , meeting type', async ({ page }) => {
-
+// Test case : Search meeting by title , des, venue , meeting type with correct 
+test('Should search meeting by title, description, venue, meeting type', async ({ page }) => {
   const keyword = 'Important';
 
   const searchInput = page.getByPlaceholder(
     'Search by title, description, venue, meeting method'
   );
 
+  await expect(searchInput).toBeVisible();
   await searchInput.fill(keyword);
 
   await Promise.all([
@@ -213,15 +213,15 @@ test('Should Search meeting by title , des, venue , meeting type', async ({ page
     ),
     searchInput.press('Enter')
   ]);
+  const results = page.locator('tr, .card, .meeting-item').filter({
+    hasText: new RegExp(keyword, 'i')
+  });
 
-    const results = page.getByText(new RegExp(keyword, 'i'))
-    await expect(results.nth(0)).toBeVisible();
-    await expect(results.nth(0)).toContainText(new RegExp(keyword, 'i'));
-  
-
+  await expect(results.first()).toBeVisible();
 });
 
-  // Test case : Search meeting by title , des, venue , meeting type not found
+
+// Test case : Search meeting by title , des, venue , meeting type not found
 test('Should show no results message when keyword not found', async ({ page }) => {
 
   const keyword = 'zzzz1234';
@@ -245,13 +245,14 @@ test('Should show no results message when keyword not found', async ({ page }) =
 
 });
 
+// Sorting Implementation Error....
+
 // Test case : Sort by active, pending , past
 test("Should Sort by active , pending , past ", async({page})=>{
   const options = ['Show Active', 'Show Pending', 'Show Past'];
   for (const option of options) {
 
     await page.getByRole('combobox').click();
-
     // Select the option
     await page.getByRole('option', { name: option }).click();
     await page.waitForLoadState('networkidle');
@@ -259,7 +260,6 @@ test("Should Sort by active , pending , past ", async({page})=>{
     const results = page.locator('[data-testid="meeting-card"]');
     await expect(results.first()).toBeVisible();
   }
-
 
 })
 
