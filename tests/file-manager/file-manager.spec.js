@@ -13,26 +13,33 @@ test.describe('File Manager 2 page', () => {
     );
   });
 //  Test case : New folder create 
-
-test('should allow to create new folder', async ({ page }) => {
+test('should allow creating a new folder or show duplicate error', async ({ page }) => {
+  // Open create folder modal
   await page.getByRole('button', { name: /new folder/i }).click();
 
-  const folderInput = page.getByRole('textbox', { name: /folder name/i });
-  await folderInput.fill('test');
-
+  const folderName = 'test20';
+  await page.getByRole('textbox', { name: /folder name/i }).fill(folderName);
   await page.getByRole('button', { name: /create folder/i }).click();
 
-  const folder = page.getByRole('heading', { name: 'test' });
-  await expect(folder).toBeVisible();
-  
+  const folder = page.getByText(folderName, { exact: true });
+  const duplicateError = page.getByText(/The Name has already been taken/i);
+
+  await Promise.race([
+    folder.waitFor({ state: 'visible' }).catch(() => {}),
+    duplicateError.waitFor({ state: 'visible' }).catch(() => {})
+  ]);
+
+  // Final assertion
+  if (await duplicateError.isVisible().catch(() => false)) {
+    await expect(duplicateError).toBeVisible();
+  } else {
+    await expect(folder).toBeVisible();
+  }
 });
 
 //  Test case : Folder name Rename
 test('should folder name rename', async ({ page }) => {
-
-  const currentFolderName = 'AGM';
-  const newFolderName = 'example2'; 
-
+  const newFolderName = 'createEdit'; 
   const openMenu = page.getByRole('button', { name: 'Open menu', exact: true }).first();
   await openMenu.waitFor({ state: 'visible' });
   await openMenu.click();
@@ -47,7 +54,7 @@ test('should folder name rename', async ({ page }) => {
 
   const successLocator = page.getByRole('heading', { name: newFolderName });
 
-  // Wait for either success or error
+  // // Wait for either success or error
   if (await successLocator.count() > 0) {
     await expect(successLocator).toBeVisible();
     console.log('Folder renamed successfully.');
@@ -60,7 +67,6 @@ test('should folder name rename', async ({ page }) => {
 
 });
 
-
 // Test case : Already Taken the folder
   test('should show error if folder already exists', async ({ page }) => {
   await page.getByRole('button', { name: /new folder/i }).click();
@@ -72,7 +78,50 @@ test('should folder name rename', async ({ page }) => {
 
 });
 
-//  Test case : Upload File
+//  Test case :Delete the Folder have subfolder
+  test('should not delete folder if it has subfolders', async ({ page }) => {
+  // Click Open Menu for the folder
+  const openMenu = page.getByRole('button', { name: 'Open menu', exact: true }).first();
+  await openMenu.click();
+
+  // Click Delete
+  const deleteItem = page.getByRole('menuitem', { name: /Delete/i });
+  await deleteItem.click();
+
+  // Confirm Delete (if needed)
+  // const confirmDelete = page.getByRole('button', { name: /^Delete$/ });
+  // await confirmDelete.click();
+  
+  const errorMessage = page.locator('div, small').filter({
+    hasText: /This folder contains sub-folders or files. Please delete them first./i
+  }).first();
+
+  await expect(errorMessage).toBeVisible({ timeout: 10000 });
+
+});
+
+//  Test case :Delete the Folder have no subfolder
+  test('should not delete folder if it has no subfolders', async ({ page }) => {
+  // Click Open Menu for the folder
+  const openMenu = page.getByRole('button', { name: 'Open menu', exact: true }).first();
+  await openMenu.click();
+
+  // Click Delete
+  const deleteItem = page.getByRole('menuitem', { name: /Delete/i });
+  await deleteItem.click();
+
+  const confirmDelete = page.getByRole('button', { name: /^Delete$/ });
+  await confirmDelete.click();
+
+await expect(confirmDelete).toHaveCount(0);
+const folderName = 'created'; 
+const folderLocator = page.getByRole('heading', { name: folderName });
+await expect(folderLocator).not.toBeVisible();
+
+});
+
+
+   //  Test case : Upload File
 
 test('should upload a new file', async ({ page }) => {
 

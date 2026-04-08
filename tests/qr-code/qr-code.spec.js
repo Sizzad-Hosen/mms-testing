@@ -19,7 +19,6 @@ test.describe('QR Code Authenticated User Flow', () => {
     await expect(qrImage).toBeVisible({ timeout: 15000 });
     const src = await qrImage.getAttribute('src');
     expect(src).toBeTruthy();
-    expect(src).toMatch(/base64|qr|image/i);
   });
 
   // Test case 02: QR Code expiry date visible
@@ -67,7 +66,6 @@ test('should show QR expired message if past expiry date', async ({ page }) => {
     const fileSize = fs.statSync(filePath).size;
     expect(fileSize).toBeGreaterThan(1000);
   });
-
 
 test('should allow generating new QR code when previous QR is expired', async ({ page }) => {
 

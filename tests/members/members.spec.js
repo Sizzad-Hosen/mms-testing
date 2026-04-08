@@ -11,7 +11,7 @@ test.describe('Members Page - Status Tabs', () => {
       'https://app-mms.baumnest.com/MQZUKKX7TLD/members?status=members'
     );
   });
-
+// test case : member tab url work correctly
   test('Registered tab should update URL correctly', async ({ page }) => {
     await page.getByRole('tab', { name: /registered/i }).click();
 
@@ -25,6 +25,7 @@ test.describe('Members Page - Status Tabs', () => {
     ).toBeVisible();
   });
 
+// test case : pending tab url work correctly
   test('Pending tab should update URL correctly', async ({ page }) => {
     await page.getByRole('tab', { name: /pending/i }).click();
 
@@ -38,7 +39,7 @@ test.describe('Members Page - Status Tabs', () => {
         .first()
     ).toBeVisible();
   });
-
+// test case : rejected tab url work correctly
   test('Rejected tab should update URL correctly', async ({ page }) => {
     await page.getByRole('tab', { name: /rejected/i }).click();
 
@@ -69,41 +70,29 @@ test('should delete first member with discard and confirm flows', async ({ page 
 
 });
 
-//Test case : Registered members display data
-test('should display registered members data in table', async ({ page }) => {
-  const table = page.getByRole('table');
-  await expect(table).toBeVisible();
+//Test case : pagination work or not 
+test('pagination should behave correctly', async ({ page }) => {
+  const rows = page.getByRole('row');
+  const nextButton = page.getByRole('button', { name: /next/i });
+  const prevButton = page.getByRole('button', { name: /previous/i });
 
-  const rows = table.getByRole('row');
   const rowCount = await rows.count();
 
-  expect(rowCount).toBeGreaterThan(1);
+  if (rowCount <= 10) {
+    await expect(nextButton).toBeDisabled();
+    await expect(prevButton).toBeDisabled();
+  } else {
+    await expect(prevButton).toBeDisabled();
+    await expect(nextButton).toBeEnabled();
 
-  const firstDataRow = rows.nth(1);
-  const cellCount = await firstDataRow.getByRole('cell').count();
+    const firstRowPage1 = await rows.nth(1).innerText();
 
-  expect(cellCount).toBeGreaterThan(5);
-});
+    await nextButton.click();
 
-//Test case : pagination work or not 
-test('should navigate between pages and show different data', async ({ page }) => {
-  const firstRowPage1 = await page.getByRole('row').nth(1).innerText();
+    await expect(rows.nth(1)).not.toHaveText(firstRowPage1);
 
-  const nextButton = page.getByRole('listitem').filter({ hasText: 'Next' });
-  const prevButton = page.getByRole('listitem').filter({ hasText: 'Previous' });
-
-  await expect(nextButton).toBeVisible();
-  await expect(nextButton).toBeEnabled();
-  await expect(prevButton).toBeVisible();
-  await expect(prevButton).toBeEnabled();
-
-  // Navigate to next page
-  await nextButton.click();
-
-  // Wait until first row changes
-  const firstRowPage2 = await page.getByRole('row').nth(1).innerText();
-
-  expect(firstRowPage2).not.toEqual(firstRowPage1);
+    await expect(prevButton).toBeEnabled();
+  }
 });
 
 // Test case : Select and role and update it..

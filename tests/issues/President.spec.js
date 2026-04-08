@@ -70,7 +70,7 @@ test.describe('Issues Feature Test - President Only', () => {
   // ✅ Confirm created issue is now visible
   await expect(page.getByText(issueTitle)).toBeVisible({ timeout: 8000 });
 });
-
+ 
   // ✅ Test: Edit Issue
   test('Edit issue', async ({ page }) => {
     await page.getByRole('button', { name: /error/i }).first().click();
