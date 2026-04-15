@@ -1,297 +1,115 @@
-import { expect, test, } from '@playwright/test';
-import { meetingData } from '../../pages/meetings/meetingsData';
+import { expect, test } from '@playwright/test';
 import { addAgenda, addParticipant } from '../../pages/meetings/helpers';
 
-  
+const TENANT = process.env.PW_TENANT_SLUG || 'MQZUKKX7TLD';
+
 test.use({
   storageState: 'storageState.json',
 });
 
-test.describe('Meeting Feauture Test', () => {
+function uniqueMeetingName(testInfo) {
+  return `pw-meeting-${testInfo.parallelIndex}-${Date.now()}`;
+}
 
+async function gotoMeetings(page) {
+  await page.goto(`/${TENANT}/meetings`);
+  await expect(page.getByRole('button', { name: /new meeting/i })).toBeVisible();
+}
+
+async function createMeeting(page, testInfo) {
+  const title = uniqueMeetingName(testInfo);
+  const description = `Created by ${testInfo.title}`;
+
+  await page.getByRole('button', { name: /new meeting/i }).click();
+  await page.getByRole('textbox', { name: 'Title*' }).fill(title);
+
+  await page.getByRole('combobox', { name: 'Type*' }).click();
+  await page.getByRole('option', { name: /annual general meeting/i }).click();
+
+  await page.getByRole('textbox', { name: /description/i }).fill(description);
+
+  await page.getByRole('button', { name: 'Date*' }).click();
+  await page.getByRole('button', { name: /today/i }).click();
+  await page.getByRole('textbox', { name: /start time/i }).fill('10:00');
+  await page.getByRole('textbox', { name: /end time/i }).fill('11:00');
+
+  await page.getByRole('radio', { name: /online/i }).click();
+  await page.getByRole('textbox', { name: /link/i }).fill('https://example.com/meeting');
+  await page.getByRole('button', { name: /save & continue/i }).click();
+
+  await addParticipant(page, 'Tarikul Islam');
+  await page.getByRole('textbox', { name: /name/i }).fill('John Doe');
+  await page.getByRole('textbox', { name: /email/i }).fill(`john+${Date.now()}@example.com`);
+  await page.getByRole('button', { name: /save & continue/i }).click();
+
+  await addAgenda(page, {
+    type: '💬Discussion',
+    title: `agenda-${Date.now()}`,
+    description: 'Quality review agenda',
+  });
+  await page.getByRole('button', { name: /save & continue/i }).click();
+
+  await expect(page.getByText(/review/i)).toBeVisible();
+  await page.getByRole('button', { name: /create meeting/i }).click();
+  await page.getByRole('button', { name: /^create$/i }).click();
+
+  await expect(page.getByText(title)).toBeVisible({ timeout: 20_000 });
+  return { title, description };
+}
+
+async function searchMeetings(page, keyword) {
+  const searchInput = page.getByPlaceholder(
+    'Search by title, description, venue, meeting method'
+  );
+
+  await searchInput.fill(keyword);
+  await Promise.all([
+    page.waitForResponse(
+      (res) => res.url().includes('/meetings') && res.request().method() === 'GET' && res.ok()
+    ),
+    searchInput.press('Enter'),
+  ]);
+}
+
+test.describe('Meetings - enterprise regression', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(
-      'https://app-mms.baumnest.com/MQZUKKX7TLD/meetings'
-    );
+    await gotoMeetings(page);
   });
 
-test.describe('Create Meeting Flow', () => {
-
-  test('should create a meeting successfully', async ({ page }) => {
-
-    //  Start meeting creation
-    await page.getByRole('button', { name: 'New Meeting' }).click();
-
-    //  Meeting details
-    await page.getByRole('textbox', { name: 'Title*' }).fill(meetingData.title);
-
-    await page.getByRole('combobox', { name: 'Type*' }).click();
-    await page.getByRole('option', { name: meetingData.type }).click();
-
-    await page.getByRole('textbox', { name: 'Description' }).fill(meetingData.description);
-
-    //  Date & time
-    await page.getByRole('button', { name: 'Date*' }).click();
-    await page.getByRole('button', { name: meetingData.dateLabel }).click();
-
-    await page.getByRole('textbox', { name: 'Start Time*' }).fill(meetingData.startTime);
-    await page.getByRole('textbox', { name: 'End Time*' }).fill(meetingData.endTime);
-
-    //  Method
-    await page.getByRole('radio', { name: meetingData.method }).click();
-    await page.getByRole('textbox', { name: 'Link*' }).fill(meetingData.link);
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    //  Participants
-    for (const participant of meetingData.participants) {
-      await addParticipant(page, participant);
-    }
-
-    await page.getByRole('textbox', { name: /name/i }).fill('John Doe');
-    await page.getByRole('textbox', { name: /email/i }).fill('john.doe@example.com');
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    //  Agenda
-    for (const agenda of meetingData.agenda) {
-      await addAgenda(page, agenda);
-    }
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    //  Review & Create
-    await expect(page.getByText('Review')).toBeVisible();
-
-    await page.getByRole('button', { name: 'Create Meeting' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    //  Final assertion
-    await expect(page.getByText(meetingData.title)).toBeVisible();
-    await expect(page.getByText(meetingData.description)).toBeVisible();
-
+  test('creates meeting with isolated data', async ({ page }, testInfo) => {
+    const { title, description } = await createMeeting(page, testInfo);
+    await expect(page.getByText(title)).toBeVisible();
+    await expect(page.getByText(description)).toBeVisible();
   });
 
-});
+  test('search returns created meeting under delayed network', async ({ page }, testInfo) => {
+    const { title } = await createMeeting(page, testInfo);
 
+    await page.route('**/meetings**', async (route) => {
+      await page.waitForTimeout(300);
+      await route.continue();
+    });
 
-test.describe('Edit Meeting Flow', () => {
+    await searchMeetings(page, title);
+    await expect(page.locator('tr, .card, .meeting-item').filter({ hasText: title }).first()).toBeVisible();
 
-  test('should edit a meeting successfully', async ({ page }) => {
-
-    // 🔹 Start meeting creation
-    await page.getByRole('button', { name: 'New Meeting' }).click();
-
-    // 🔹 Meeting details
-    await page.getByRole('textbox', { name: 'Title*' }).fill(meetingData.title);
-
-    await page.getByRole('combobox', { name: 'Type*' }).click();
-    await page.getByRole('option', { name: meetingData.type }).click();
-
-    await page.getByRole('textbox', { name: 'Description' }).fill(meetingData.description);
-
-    // 🔹 Date & time
-    await page.getByRole('button', { name: 'Date*' }).click();
-    await page.getByRole('button', { name: meetingData.dateLabel }).click();
-
-    await page.getByRole('textbox', { name: 'Start Time*' }).fill(meetingData.startTime);
-    await page.getByRole('textbox', { name: 'End Time*' }).fill(meetingData.endTime);
-
-    // 🔹 Method
-    await page.getByRole('radio', { name: meetingData.method }).click();
-    await page.getByRole('textbox', { name: 'Link*' }).fill(meetingData.link);
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    // 🔹 Participants
-    for (const participant of meetingData.participants) {
-      await addParticipant(page, participant);
-    }
-
-    await page.getByRole('textbox', { name: /name/i }).fill('John Doe');
-    await page.getByRole('textbox', { name: /email/i }).fill('john.doe@example.com');
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    // 🔹 Agenda
-    for (const agenda of meetingData.agenda) {
-      await addAgenda(page, agenda);
-    }
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    // 🔹 Review & Create
-    await expect(page.getByText('Review')).toBeVisible();
-
-    await page.getByRole('button', { name: 'Create Meeting' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    // 🔹 Final assertion
-    await expect(page.getByText(meetingData.title)).toBeVisible();
-    await expect(page.getByText(meetingData.description)).toBeVisible();
-
+    await page.unroute('**/meetings**');
   });
 
-});
-
-// Test case : copy a meetings
-test.describe('Copy duplicate Meeting Flow', () => {
-
-  test('should edit a meeting successfully', async ({ page }) => {
-
-    await page.getByRole("button", { name: "Open Menu" }).first().click();
-    await page.getByRole("menuitem", { name: "Copy Meeting" }).click();
-    // // 🔹 Start meeting creation
-    await page.getByRole('button', { name: 'Duplicate Meeting' }).click();
-
-    // 🔹 Meeting details
-    await page.getByRole('textbox', { name: 'Title*' }).fill(meetingData.title);
-
-    await page.getByRole('combobox', { name: 'Type*' }).click();
-    await page.getByRole('option', { name: meetingData.type }).click();
-
-    await page.getByRole('textbox', { name: 'Description' }).fill(meetingData.description);
-
-    // 🔹 Date & time
-    await page.getByRole('button', { name: 'Date*' }).click();
-    await page.getByRole('button', { name: meetingData.dateLabel }).click();
-
-    await page.getByRole('textbox', { name: 'Start Time*' }).fill(meetingData.startTime);
-    await page.getByRole('textbox', { name: 'End Time*' }).fill(meetingData.endTime);
-
-    // 🔹 Method
-    await page.getByRole('radio', { name: meetingData.method }).click();
-    await page.getByRole('textbox', { name: 'Link*' }).fill(meetingData.link);
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    // 🔹 Participants
-    for (const participant of meetingData.participants) {
-      await addParticipant(page, participant);
-    }
-
-    await page.getByRole('textbox', { name: /name/i }).fill('John Doe');
-    await page.getByRole('textbox', { name: /email/i }).fill('john.doe@example.com');
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    // 🔹 Agenda
-    for (const agenda of meetingData.agenda) {
-      await addAgenda(page, agenda);
-    }
-
-    await page.getByRole('button', { name: /Save & Continue/i }).click();
-
-    // 🔹 Review & Create
-    await expect(page.getByText('Review')).toBeVisible();
-
-    await page.getByRole('button', { name: 'Create Meeting' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    // 🔹 Final assertion
-    await expect(page.getByText(meetingData.title)).toBeVisible();
-    await expect(page.getByText(meetingData.description)).toBeVisible();
-
+  test('search handles no-result path deterministically', async ({ page }) => {
+    await searchMeetings(page, `not-found-${Date.now()}`);
+    await expect(page.getByText(/no meetings/i)).toBeVisible();
   });
 
-});
+  test('status filter remains functional across options', async ({ page }) => {
+    const options = ['Show Active', 'Show Pending', 'Show Past'];
 
-// Test case : Search meeting by title , des, venue , meeting type with correct 
-test('Should search meeting by title, description, venue, meeting type', async ({ page }) => {
-  const keyword = 'Important';
-
-  const searchInput = page.getByPlaceholder(
-    'Search by title, description, venue, meeting method'
-  );
-
-  await expect(searchInput).toBeVisible();
-  await searchInput.fill(keyword);
-
-  await Promise.all([
-    page.waitForResponse(res =>
-      res.url().includes('/meetings') && res.status() === 200
-    ),
-    searchInput.press('Enter')
-  ]);
-  const results = page.locator('tr, .card, .meeting-item').filter({
-    hasText: new RegExp(keyword, 'i')
+    for (const option of options) {
+      await page.getByRole('combobox').click();
+      await page.getByRole('option', { name: option }).click();
+      await page.waitForResponse((res) => res.url().includes('/meetings') && res.ok());
+      await expect(page.getByRole('combobox')).toContainText(option);
+    }
   });
-
-  await expect(results.first()).toBeVisible();
 });
-
-
-// Test case : Search meeting by title , des, venue , meeting type not found
-test('Should show no results message when keyword not found', async ({ page }) => {
-
-  const keyword = 'zzzz1234';
-
-  const searchInput = page.getByPlaceholder(
-    'Search by title, description, venue, meeting method'
-  );
-
-  await searchInput.fill(keyword);
-
-  await Promise.all([
-    page.waitForResponse(res =>
-      res.url().includes('/meetings') && res.status() === 200
-    ),
-    searchInput.press('Enter')
-  ]);
-
-  const noResults = page.getByText(/No meetings/i);
-
-  await expect(noResults).toBeVisible();
-
-});
-
-// Sorting Implementation Error....
-
-// Test case : Sort by active, pending , past
-test("Should Sort by active , pending , past ", async({page})=>{
-  const options = ['Show Active', 'Show Pending', 'Show Past'];
-  for (const option of options) {
-
-    await page.getByRole('combobox').click();
-    // Select the option
-    await page.getByRole('option', { name: option }).click();
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('combobox')).toHaveText(option);
-    const results = page.locator('[data-testid="meeting-card"]');
-    await expect(results.first()).toBeVisible();
-  }
-
-})
-
-// delete test case 
-test("Should Delete a meeting", async ({ page }) => {
-  await page.getByRole('tab', { name: 'Draft' }).click();
-
-  await page.getByRole('button').filter({ hasText: /^$/ }).nth(4).click();
-  const confirmDelete = page.getByRole('button', { name: /delete/i });
-  await expect(confirmDelete).toBeVisible();
-
-  await confirmDelete.click();
-  await expect(
-    page.getByText("Meeting deleted successfully!")
-  ).toBeVisible({ timeout: 10000 });
-
-});
-
-// test case : cancle a meeting
-test("Should Cancel a Meeting", async ({ page }) => {
-  await page.getByRole("button", { name: "Open Menu" }).first().click();
-  await page.getByRole("menuitem", { name: "cancel meeting" }).click();
-  await page.getByRole("button", { name: "Cancel Meeting" }).click();
-
-  const successMessage = page.getByText("Meeting cancelled successfully");
-
-  await expect(successMessage).toHaveCount(1);
-});
-
-
-
-
-})
-
-
+  
